@@ -1,0 +1,187 @@
+/**
+ * Nourished Rebel Design Tokens
+ *
+ * This file contains the complete color system with variants for each brand color.
+ * Each color has a ramp from 50 (lightest) to 950 (darkest).
+ *
+ * Primary Brand Color: #675C53
+ * Supporting Colors: Cream, Stone, Olive, Terracotta, Clay
+ * Text Colors: Charcoal, Inverse
+ */
+
+:root {
+  /* ============================================
+     PRIMARY BRAND COLOR - Warm Brown
+     Base: #675C53
+     Use: CTAs, H1/H2, active states, primary buttons
+     ============================================ */
+  --color-brand-50: #F8F7F6;
+  --color-brand-100: #F0EEEC;
+  --color-brand-200: #DED9D5;
+  --color-brand-300: #C3BAB3;
+  --color-brand-400: #A1938A;
+  --color-brand-500: #675C53;
+  --color-brand-600: #524741;
+  --color-brand-700: #423A34;
+  --color-brand-800: #332D29;
+  --color-brand-900: #282421;
+  --color-brand-950: #1A1816;
+
+  /* ============================================
+     BACKGROUND - Cream
+     Base: #EFE9E3
+     Use: Main page background, primary surfaces
+     ============================================ */
+  --color-cream-50: #FDFCFB;
+  --color-cream-100: #FAF7F4;
+  --color-cream-200: #EFE9E3;
+  --color-cream-300: #E3DBD2;
+  --color-cream-400: #D6CFC4;
+  --color-cream-500: #C4BCB3;
+  --color-cream-600: #A8A099;
+  --color-cream-700: #87827C;
+  --color-cream-800: #6B6762;
+  --color-cream-900: #54504C;
+  --color-cream-950: #333130;
+
+  /* ============================================
+     BACKGROUND - Stone
+     Base: #D6CFC4
+     Use: Alternating sections, cards, dividers
+     ============================================ */
+  --color-stone-50: #F9F7F5;
+  --color-stone-100: #F3EFEB;
+  --color-stone-200: #E8E1D9;
+  --color-stone-300: #D6CFC4;
+  --color-stone-400: #C3BAB0;
+  --color-stone-500: #AFA599;
+  --color-stone-600: #948B81;
+  --color-stone-700: #77706A;
+  --color-stone-800: #5E5955;
+  --color-stone-900: #4C4845;
+  --color-stone-950: #2E2C2A;
+
+  /* ============================================
+     ACCENT - Olive (Muted)
+     Base: #A6B640
+     Use: Tags, badges, small accent elements (sparingly)
+     ============================================ */
+  --color-olive-50: #F7F9EB;
+  --color-olive-100: #EDF3D3;
+  --color-olive-200: #DCE7AC;
+  --color-olive-300: #C5D67A;
+  --color-olive-400: #B3C658;
+  --color-olive-500: #A6B640;
+  --color-olive-600: #889630;
+  --color-olive-700: #687328;
+  --color-olive-800: #535B24;
+  --color-olive-900: #464E22;
+  --color-olive-950: #252B0F;
+
+  /* ============================================
+     ACCENT - Terracotta (Secondary)
+     Base: #C6866A
+     Use: Icon tints, secondary CTAs, decorative elements
+     ============================================ */
+  --color-terracotta-50: #FBF5F2;
+  --color-terracotta-100: #F7E8E1;
+  --color-terracotta-200: #EECFC2;
+  --color-terracotta-300: #E4AE9A;
+  --color-terracotta-400: #D69878;
+  --color-terracotta-500: #C6866A;
+  --color-terracotta-600: #B16B50;
+  --color-terracotta-700: #935642;
+  --color-terracotta-800: #79483A;
+  --color-terracotta-900: #643E33;
+  --color-terracotta-950: #361F19;
+
+  /* ============================================
+     ACCENT - Clay (Deep)
+     Base: #C78553
+     Use: Important badges, emphasis blocks, illustration accents
+     ============================================ */
+  --color-clay-50: #FBF5F0;
+  --color-clay-100: #F6E8DC;
+  --color-clay-200: #EDCEB8;
+  --color-clay-300: #E2AD89;
+  --color-clay-400: #D79368;
+  --color-clay-500: #C78553;
+  --color-clay-600: #B56D42;
+  --color-clay-700: #975739;
+  --color-clay-800: #7A4733;
+  --color-clay-900: #643C2C;
+  --color-clay-950: #361E16;
+
+  /* ============================================
+     TEXT - Charcoal
+     Base: #3F3A36
+     Use: Body copy, paragraphs, all main text content
+     ============================================ */
+  --color-charcoal-50: #F6F5F5;
+  --color-charcoal-100: #EBEAEA;
+  --color-charcoal-200: #D8D6D4;
+  --color-charcoal-300: #BCB8B4;
+  --color-charcoal-400: #9A9390;
+  --color-charcoal-500: #7E7774;
+  --color-charcoal-600: #6A6562;
+  --color-charcoal-700: #575350;
+  --color-charcoal-800: #4A4744;
+  --color-charcoal-900: #3F3A36;
+  --color-charcoal-950: #282523;
+
+  /* ============================================
+     SEMANTIC COLORS
+     ============================================ */
+
+  /* Success - Soft Green */
+  --color-success-50: #F0F9F4;
+  --color-success-100: #DCEFE4;
+  --color-success-200: #BBDFCC;
+  --color-success-300: #8BC9AB;
+  --color-success-400: #57AB83;
+  --color-success-500: #359066;
+  --color-success-600: #267352;
+  --color-success-700: #1F5C43;
+  --color-success-800: #1B4937;
+  --color-success-900: #173C2E;
+  --color-success-950: #0B221A;
+
+  /* Warning - Amber */
+  --color-warning-50: #FBF7F0;
+  --color-warning-100: #F6ECDB;
+  --color-warning-200: #EDD7B8;
+  --color-warning-300: #E2BB8A;
+  --color-warning-400: #D69B5E;
+  --color-warning-500: #CC803F;
+  --color-warning-600: #BE6733;
+  --color-warning-700: #9E4F2C;
+  --color-warning-800: #7F4028;
+  --color-warning-900: #673524;
+  --color-warning-950: #381911;
+
+  /* Error - Muted Red */
+  --color-error-50: #FDF4F3;
+  --color-error-100: #FCE7E4;
+  --color-error-200: #FAD3CD;
+  --color-error-300: #F5B3AA;
+  --color-error-400: #ED8578;
+  --color-error-500: #E0604E;
+  --color-error-600: #CC4434;
+  --color-error-700: #AB3528;
+  --color-error-800: #8D3025;
+  --color-error-900: #752E25;
+  --color-error-950: #40140F;
+
+  /* Info - Muted Blue */
+  --color-info-50: #F4F7F9;
+  --color-info-100: #E9EEF2;
+  --color-info-200: #D7E2E8;
+  --color-info-300: #B8CCD8;
+  --color-info-400: #94B0C4;
+  --color-info-500: #7796B3;
+  --color-info-600: #637FA2;
+  --color-info-700: #556C91;
+  --color-info-800: #495B78;
+  --color-info-900: #3F4D63;
+  --color-info-950: #29313E;
+}

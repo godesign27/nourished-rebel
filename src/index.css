@@ -1,0 +1,19 @@
+@import './styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background-primary text-text-primary antialiased;
+  }
+
+  * {
+    @apply scroll-smooth;
+  }
+}
