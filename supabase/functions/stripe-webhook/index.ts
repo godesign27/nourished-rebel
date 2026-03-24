@@ -40,26 +40,42 @@ Deno.serve(async (req: Request) => {
     const signature = req.headers.get("stripe-signature");
 
     console.log("Payload length:", payload.length);
+    console.log("Payload first 100 chars:", payload.substring(0, 100));
     console.log("Has signature:", !!signature);
+    console.log("Signature header:", signature?.substring(0, 50) + "...");
     console.log("Has webhook secret:", !!webhookSecret);
+    console.log("Webhook secret prefix:", webhookSecret?.substring(0, 10) + "...");
 
     let event: Stripe.Event;
 
-    if (webhookSecret && signature) {
-      try {
-        event = await stripe.webhooks.constructEventAsync(payload, signature, webhookSecret);
-        console.log("Signature verified successfully");
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error";
-        console.error("Signature verification failed:", errorMessage);
-        return new Response(
-          JSON.stringify({ error: `Webhook signature verification failed: ${errorMessage}` }),
-          { status: 401, headers: corsHeaders }
-        );
-      }
-    } else {
-      console.log("WARNING: Skipping signature verification (development mode)");
-      event = JSON.parse(payload) as Stripe.Event;
+    if (!signature) {
+      console.error("No Stripe-Signature header present");
+      return new Response(
+        JSON.stringify({ error: "Missing Stripe-Signature header" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!webhookSecret) {
+      console.error("STRIPE_WEBHOOK_SECRET not configured");
+      return new Response(
+        JSON.stringify({ error: "Webhook secret not configured" }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    try {
+      event = await stripe.webhooks.constructEventAsync(payload, signature, webhookSecret);
+      console.log("Signature verified successfully");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      console.error("Signature verification failed:", errorMessage);
+      console.error("This usually means the STRIPE_WEBHOOK_SECRET doesn't match.");
+      console.error("Please verify the secret in Stripe Dashboard > Developers > Webhooks > [endpoint] > Signing secret");
+      return new Response(
+        JSON.stringify({ error: `Webhook signature verification failed: ${errorMessage}` }),
+        { status: 401, headers: corsHeaders }
+      );
     }
 
     console.log("Event type:", event.type);
