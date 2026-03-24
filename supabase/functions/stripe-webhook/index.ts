@@ -231,7 +231,15 @@ Deno.serve(async (req: Request) => {
         if (customerEmail) {
           try {
             console.log("=== SENDING CUSTOMER EMAIL ===");
-            console.log("Email endpoint:", `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`);
+            const supabaseUrl = Deno.env.get("SUPABASE_URL");
+            const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+            console.log("SUPABASE_URL exists:", !!supabaseUrl);
+            console.log("SUPABASE_SERVICE_ROLE_KEY exists:", !!serviceRoleKey);
+            console.log("SUPABASE_SERVICE_ROLE_KEY length:", serviceRoleKey?.length || 0);
+
+            const emailEndpoint = `${supabaseUrl}/functions/v1/send-email`;
+            console.log("Email endpoint:", emailEndpoint);
+
             const customerEmailPayload = {
               to: customerEmail,
               subject: `Purchase Confirmation - ${fullProgramName}`,
@@ -242,29 +250,43 @@ Deno.serve(async (req: Request) => {
               subject: customerEmailPayload.subject,
               htmlLength: customerEmailPayload.html.length,
             }));
-            const customerEmailResponse = await fetch(
-              `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
-              {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(customerEmailPayload),
-              }
-            );
 
-            const customerEmailResult = await customerEmailResponse.json();
+            console.log("Making fetch request to send-email...");
+            const customerEmailResponse = await fetch(emailEndpoint, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${serviceRoleKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(customerEmailPayload),
+            });
+
             console.log("Customer email response status:", customerEmailResponse.status);
-            console.log("Customer email result:", JSON.stringify(customerEmailResult));
+            console.log("Customer email response headers:", JSON.stringify(Object.fromEntries(customerEmailResponse.headers.entries())));
+
+            const responseText = await customerEmailResponse.text();
+            console.log("Customer email raw response:", responseText);
+
+            let customerEmailResult;
+            try {
+              customerEmailResult = JSON.parse(responseText);
+            } catch (parseError) {
+              console.error("Failed to parse email response as JSON:", parseError);
+              customerEmailResult = { rawResponse: responseText };
+            }
 
             if (!customerEmailResponse.ok) {
-              console.error("Customer email failed:", customerEmailResult);
+              console.error("Customer email failed with status:", customerEmailResponse.status);
+              console.error("Customer email error details:", JSON.stringify(customerEmailResult));
             } else {
               console.log("Customer confirmation email sent successfully");
+              console.log("Customer email result:", JSON.stringify(customerEmailResult));
             }
           } catch (emailError) {
-            console.error("Failed to send customer email:", emailError);
+            console.error("=== CUSTOMER EMAIL ERROR ===");
+            console.error("Error type:", emailError?.constructor?.name);
+            console.error("Error message:", emailError instanceof Error ? emailError.message : String(emailError));
+            console.error("Error stack:", emailError instanceof Error ? emailError.stack : "No stack");
           }
         } else {
           console.log("No customer email available, skipping customer notification");
@@ -272,6 +294,9 @@ Deno.serve(async (req: Request) => {
 
         try {
           console.log("=== SENDING ADMIN EMAIL ===");
+          const supabaseUrl = Deno.env.get("SUPABASE_URL");
+          const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
           const adminEmailPayload = {
             to: "nourishedrebel@gmail.com",
             subject: `New Purchase: ${fullProgramName} - ${customerName}`,
@@ -282,29 +307,45 @@ Deno.serve(async (req: Request) => {
             subject: adminEmailPayload.subject,
             htmlLength: adminEmailPayload.html.length,
           }));
+
+          console.log("Making fetch request for admin email...");
           const adminEmailResponse = await fetch(
-            `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
+            `${supabaseUrl}/functions/v1/send-email`,
             {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                Authorization: `Bearer ${serviceRoleKey}`,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify(adminEmailPayload),
             }
           );
 
-          const adminEmailResult = await adminEmailResponse.json();
           console.log("Admin email response status:", adminEmailResponse.status);
-          console.log("Admin email result:", JSON.stringify(adminEmailResult));
+
+          const adminResponseText = await adminEmailResponse.text();
+          console.log("Admin email raw response:", adminResponseText);
+
+          let adminEmailResult;
+          try {
+            adminEmailResult = JSON.parse(adminResponseText);
+          } catch (parseError) {
+            console.error("Failed to parse admin email response as JSON:", parseError);
+            adminEmailResult = { rawResponse: adminResponseText };
+          }
 
           if (!adminEmailResponse.ok) {
-            console.error("Admin email failed:", adminEmailResult);
+            console.error("Admin email failed with status:", adminEmailResponse.status);
+            console.error("Admin email error details:", JSON.stringify(adminEmailResult));
           } else {
             console.log("Admin notification email sent successfully");
+            console.log("Admin email result:", JSON.stringify(adminEmailResult));
           }
         } catch (emailError) {
-          console.error("Failed to send admin email:", emailError);
+          console.error("=== ADMIN EMAIL ERROR ===");
+          console.error("Error type:", emailError?.constructor?.name);
+          console.error("Error message:", emailError instanceof Error ? emailError.message : String(emailError));
+          console.error("Error stack:", emailError instanceof Error ? emailError.stack : "No stack");
         }
 
         const { error: emailFlagError } = await supabase
