@@ -230,7 +230,18 @@ Deno.serve(async (req: Request) => {
 
         if (customerEmail) {
           try {
-            console.log("Sending customer confirmation email...");
+            console.log("=== SENDING CUSTOMER EMAIL ===");
+            console.log("Email endpoint:", `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`);
+            const customerEmailPayload = {
+              to: customerEmail,
+              subject: `Purchase Confirmation - ${fullProgramName}`,
+              html: customerEmailHtml,
+            };
+            console.log("Customer email payload:", JSON.stringify({
+              to: customerEmailPayload.to,
+              subject: customerEmailPayload.subject,
+              htmlLength: customerEmailPayload.html.length,
+            }));
             const customerEmailResponse = await fetch(
               `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
               {
@@ -239,11 +250,7 @@ Deno.serve(async (req: Request) => {
                   Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                  to: customerEmail,
-                  subject: `Purchase Confirmation - ${fullProgramName}`,
-                  html: customerEmailHtml,
-                }),
+                body: JSON.stringify(customerEmailPayload),
               }
             );
 
@@ -264,7 +271,17 @@ Deno.serve(async (req: Request) => {
         }
 
         try {
-          console.log("Sending admin notification email...");
+          console.log("=== SENDING ADMIN EMAIL ===");
+          const adminEmailPayload = {
+            to: "nourishedrebel@gmail.com",
+            subject: `New Purchase: ${fullProgramName} - ${customerName}`,
+            html: adminEmailHtml,
+          };
+          console.log("Admin email payload:", JSON.stringify({
+            to: adminEmailPayload.to,
+            subject: adminEmailPayload.subject,
+            htmlLength: adminEmailPayload.html.length,
+          }));
           const adminEmailResponse = await fetch(
             `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
             {
@@ -273,11 +290,7 @@ Deno.serve(async (req: Request) => {
                 Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                to: "nourishedrebel@gmail.com",
-                subject: `New Purchase: ${fullProgramName} - ${customerName}`,
-                html: adminEmailHtml,
-              }),
+              body: JSON.stringify(adminEmailPayload),
             }
           );
 
