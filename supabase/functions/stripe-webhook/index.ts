@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const customerEmail = session.customer_details?.email ?? session.customer_email;
     const customerName = session.customer_details?.name ?? 'there';
     console.log('Session:', session.id, '| Email:', customerEmail, '| Payment:', session.payment_status);
-    if (session.payment_status === 'paid') {
+    if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
       const { data: purchase, error: dbError } = await supabase
         .from('program_purchases')
         .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
