@@ -90,12 +90,12 @@ function buildCustomerEmail(
           <table role="presentation" style="width: 100%;">
             <tr>
               <td style="width: 36px; vertical-align: top; padding-top: 2px;">
-                <span style="display: inline-block; width: 28px; height: 28px; background-color: #2d6a4f; color: #ffffff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">1</span>
+                <span style="display: inline-block; width: 28px; height: 28px; background-color: #675C53; color: #ffffff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">1</span>
               </td>
               <td style="vertical-align: top;">
                 <p style="margin: 0 0 4px 0; font-weight: 600; color: #1a1a1a; font-size: 16px;">Schedule Your First Session</p>
                 <p style="margin: 0 0 10px 0; color: #555555; font-size: 15px;">Use this link to book a time that works for you:</p>
-                <a href="${bookingLink}" style="display: inline-block; padding: 10px 24px; background-color: #2d6a4f; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Book Your Session</a>
+                <a href="${bookingLink}" style="display: inline-block; padding: 10px 24px; background-color: #675C53; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Book Your Session</a>
               </td>
             </tr>
           </table>
@@ -111,12 +111,12 @@ function buildCustomerEmail(
           <table role="presentation" style="width: 100%;">
             <tr>
               <td style="width: 36px; vertical-align: top; padding-top: 2px;">
-                <span style="display: inline-block; width: 28px; height: 28px; background-color: #2d6a4f; color: #ffffff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">${stepNum}</span>
+                <span style="display: inline-block; width: 28px; height: 28px; background-color: #675C53; color: #ffffff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">${stepNum}</span>
               </td>
               <td style="vertical-align: top;">
                 <p style="margin: 0 0 4px 0; font-weight: 600; color: #1a1a1a; font-size: 16px;">Complete Your Intake Form</p>
                 <p style="margin: 0 0 10px 0; color: #555555; font-size: 15px;">This helps us understand your body, your goals, and where to begin.</p>
-                <a href="${intakeFormLink}" style="display: inline-block; padding: 10px 24px; background-color: #2d6a4f; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Fill Out Intake Form</a>
+                <a href="${intakeFormLink}" style="display: inline-block; padding: 10px 24px; background-color: #675C53; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Fill Out Intake Form</a>
               </td>
             </tr>
           </table>
@@ -131,7 +131,7 @@ function buildCustomerEmail(
         <table role="presentation" style="width: 100%;">
           <tr>
             <td style="width: 36px; vertical-align: top; padding-top: 2px;">
-              <span style="display: inline-block; width: 28px; height: 28px; background-color: #2d6a4f; color: #ffffff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">${nextStepNum}</span>
+              <span style="display: inline-block; width: 28px; height: 28px; background-color: #675C53; color: #ffffff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">${nextStepNum}</span>
             </td>
             <td style="vertical-align: top;">
               <p style="margin: 0 0 4px 0; font-weight: 600; color: #1a1a1a; font-size: 16px;">Get Ready for Real Change</p>
@@ -155,7 +155,7 @@ function buildCustomerEmail(
 
           <!-- Header -->
           <tr>
-            <td style="background-color: #2d6a4f; padding: 40px 40px 32px 40px; text-align: center;">
+            <td style="background-color: #675C53; padding: 40px 40px 32px 40px; text-align: center;">
               <p style="margin: 0 0 8px 0; font-size: 14px; color: rgba(255,255,255,0.8); letter-spacing: 1px; text-transform: uppercase;">You're In</p>
               <h1 style="margin: 0; font-size: 26px; color: #ffffff; font-weight: 700; line-height: 1.3;">Let's begin your<br>Nourished Rebel journey</h1>
             </td>
@@ -173,13 +173,13 @@ function buildCustomerEmail(
           <!-- Program Summary -->
           <tr>
             <td style="padding: 28px 40px 0 40px;">
-              <table role="presentation" style="width: 100%; background-color: #f0f7f3; border-radius: 8px; border-left: 4px solid #2d6a4f;">
+              <table role="presentation" style="width: 100%; background-color: #F0EEEC; border-radius: 8px; border-left: 4px solid #675C53;">
                 <tr>
                   <td style="padding: 20px 24px;">
-                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #2d6a4f; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Program</p>
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #675C53; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Program</p>
                     <p style="margin: 0 0 6px 0; font-size: 18px; color: #1a1a1a; font-weight: 700;">${displayName}</p>
                     <p style="margin: 0 0 4px 0; font-size: 14px; color: #555555;">${sessionSummary}</p>
-                    <p style="margin: 0; font-size: 16px; color: #2d6a4f; font-weight: 700;">Total: ${price}</p>
+                    <p style="margin: 0; font-size: 16px; color: #675C53; font-weight: 700;">Total: ${price}</p>
                   </td>
                 </tr>
               </table>
@@ -231,7 +231,7 @@ function buildCustomerEmail(
           <!-- Footer -->
           <tr>
             <td style="background-color: #f7f5f0; padding: 20px 40px; text-align: center;">
-              <p style="margin: 0; font-size: 12px; color: #999999; line-height: 1.5;">You're receiving this because you purchased a program from Nourished Rebel.<br>If you need support, contact us at <a href="mailto:nourishedrebel@gmail.com" style="color: #2d6a4f;">nourishedrebel@gmail.com</a></p>
+              <p style="margin: 0; font-size: 12px; color: #999999; line-height: 1.5;">You're receiving this because you purchased a program from Nourished Rebel.<br>If you need support, contact us at <a href="mailto:nourishedrebel@gmail.com" style="color: #675C53;">nourishedrebel@gmail.com</a></p>
             </td>
           </tr>
 
@@ -262,7 +262,7 @@ function buildOwnerEmail(
       <td style="padding: 40px 20px;">
         <table role="presentation" style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
           <tr>
-            <td style="background-color: #2d6a4f; padding: 24px 32px;">
+            <td style="background-color: #675C53; padding: 24px 32px;">
               <h1 style="margin: 0; font-size: 22px; color: #ffffff;">New Purchase Alert</h1>
             </td>
           </tr>
@@ -270,7 +270,7 @@ function buildOwnerEmail(
             <td style="padding: 28px 32px;">
               <table role="presentation" style="width: 100%;">
                 <tr><td style="padding: 6px 0; font-size: 15px; color: #555;"><strong style="color: #1a1a1a;">Customer:</strong> ${customerName}</td></tr>
-                <tr><td style="padding: 6px 0; font-size: 15px; color: #555;"><strong style="color: #1a1a1a;">Email:</strong> <a href="mailto:${customerEmail}" style="color: #2d6a4f;">${customerEmail}</a></td></tr>
+                <tr><td style="padding: 6px 0; font-size: 15px; color: #555;"><strong style="color: #1a1a1a;">Email:</strong> <a href="mailto:${customerEmail}" style="color: #675C53;">${customerEmail}</a></td></tr>
                 <tr><td style="padding: 6px 0; font-size: 15px; color: #555;"><strong style="color: #1a1a1a;">Program:</strong> ${displayName}</td></tr>
                 <tr><td style="padding: 6px 0; font-size: 15px; color: #555;"><strong style="color: #1a1a1a;">Amount:</strong> ${price}</td></tr>
                 <tr><td style="padding: 6px 0; font-size: 15px; color: #555;"><strong style="color: #1a1a1a;">Session:</strong> <span style="font-size: 12px; color: #999;">${sessionId}</span></td></tr>
