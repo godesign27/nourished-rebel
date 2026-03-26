@@ -61,10 +61,14 @@ Deno.serve(async (req) => {
         console.log('No purchase found for session:', session.id);
       } else {
         console.log('Purchase found (status:', purchase.status, '):', purchase.id);
-        console.log('[Email] customerEmail value:', customerEmail);
+        console.log('[Email] customerEmail from Stripe session:', customerEmail);
+        console.log('[Email] About to send emails...');
         if (customerEmail) {
+          console.log('[Email] Calling send-email for customer...');
           try {
-            const custResp = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+            const emailUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`;
+            console.log('[Email] URL:', emailUrl);
+            const custResp = await fetch(emailUrl, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
