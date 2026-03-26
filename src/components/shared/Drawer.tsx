@@ -7,7 +7,7 @@ interface DrawerProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
 export function Drawer({ isOpen, onClose, title, children, footer, size = 'lg' }: DrawerProps) {
@@ -36,6 +36,7 @@ export function Drawer({ isOpen, onClose, title, children, footer, size = 'lg' }
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
+    full: 'max-w-full',
   };
 
   if (!isOpen) return null;
@@ -64,7 +65,7 @@ export function Drawer({ isOpen, onClose, title, children, footer, size = 'lg' }
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className={`flex-1 overflow-y-auto ${size === 'full' ? '' : 'px-6 py-6'}`}>
           {children}
         </div>
 

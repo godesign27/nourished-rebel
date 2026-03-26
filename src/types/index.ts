@@ -87,6 +87,7 @@ export interface ProgramVariant {
   program_id: string;
   name: string;
   description: string | null;
+  detailed_description: string | null;
   price: number;
   billing_frequency: string | null;
   session_count: number | null;

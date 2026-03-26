@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Container } from '../components/shared/Container';
 import { Section } from '../components/shared/Section';
@@ -20,6 +20,7 @@ export function ProgramDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const variantDetailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadProgram();
@@ -220,6 +221,20 @@ export function ProgramDetailPage() {
                   />
                 </div>
               )}
+
+              {selectedVariant?.detailed_description && (
+                <div ref={variantDetailRef} className="mt-10 scroll-mt-24">
+                  <div className="border-t border-gray-200 pt-10">
+                    <H2 className="mb-6">{selectedVariant.name}</H2>
+                    <div
+                      className="prose prose-lg max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHtml(selectedVariant.detailed_description),
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -251,7 +266,14 @@ export function ProgramDetailPage() {
                       return (
                         <button
                           key={variant.id}
-                          onClick={() => setSelectedVariant(variant)}
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            if (variant.detailed_description && variantDetailRef.current) {
+                              setTimeout(() => {
+                                variantDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }, 100);
+                            }
+                          }}
                           className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-150 text-left ${
                             isSelected
                               ? 'border-text-heading bg-brand-50 shadow-md'
