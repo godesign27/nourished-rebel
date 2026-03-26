@@ -26,6 +26,7 @@ import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { ThemeDesignPage } from './pages/admin/ThemeDesignPage';
 import { SubscribersPage } from './pages/admin/SubscribersPage';
+import { ScrollToTop } from './components/shared/ScrollToTop';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
       <AuthProvider>
         <AdminModeProvider>
           <Router>
+            <ScrollToTop />
             <Routes>
             {/* Public Routes with Layout */}
             <Route path="/" element={<Layout><HomePage /></Layout>} />
