@@ -107,10 +107,54 @@ Deno.serve(async (req: Request) => {
       console.log("Variant found:", variant.name, "Price:", price);
     }
 
-    console.log("Final price to charge:", price, "Type:", typeof price);
+    const numericPrice = Number(price) || 0;
+    console.log("Final price to charge:", numericPrice, "Type:", typeof price);
 
-    if (!price || Number(price) <= 0) {
-      throw new Error(`Invalid price: ${price}`);
+    if (numericPrice <= 0) {
+      console.log("Free program — skipping Stripe, creating completed purchase directly");
+
+      const freeSessionId = `free_${crypto.randomUUID()}`;
+
+      const { error: purchaseError } = await supabaseAdmin
+        .from("program_purchases")
+        .insert({
+          auth_user_id: user.id,
+          program_id: programId,
+          variant_id: variantId || null,
+          stripe_checkout_session_id: freeSessionId,
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          amount: 0,
+          currency: "usd",
+          customer_email: user.email || "",
+          program_snapshot: {
+            program_name: program.name,
+            variant_name: variant?.name || null,
+            program_summary: program.summary,
+          },
+        });
+
+      if (purchaseError) {
+        console.error("Failed to create free purchase record:", purchaseError);
+        throw new Error("Failed to record your enrollment. Please try again.");
+      }
+
+      const freeSuccessUrl = successUrl.replace("{CHECKOUT_SESSION_ID}", freeSessionId);
+
+      return new Response(
+        JSON.stringify({
+          sessionId: freeSessionId,
+          url: freeSuccessUrl,
+          free: true,
+        }),
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -118,7 +162,7 @@ Deno.serve(async (req: Request) => {
       throw new Error("Stripe is not configured");
     }
 
-    const amountInCents = Math.round(Number(price) * 100);
+    const amountInCents = Math.round(numericPrice * 100);
 
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",

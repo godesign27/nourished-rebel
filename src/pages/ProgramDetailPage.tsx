@@ -85,7 +85,7 @@ export function ProgramDetailPage() {
       return;
     }
 
-    if (!selectedVariant && !program.price) {
+    if (!selectedVariant && program.price == null) {
       setCheckoutError('This program does not have pricing configured. Please contact support.');
       return;
     }
