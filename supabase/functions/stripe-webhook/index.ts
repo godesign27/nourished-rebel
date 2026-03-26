@@ -41,21 +41,43 @@ Deno.serve(async (req) => {
       else if (!purchase) console.log('No pending purchase found for session:', session.id);
       else {
         console.log('Purchase completed:', purchase.id);
+        console.log('[Email] customerEmail value:', customerEmail);
         if (customerEmail) {
           try {
-            const emailResp = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+            const custResp = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
               method: 'POST',
-              headers: { 'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`, 'Content-Type': 'application/json' },
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+                'Content-Type': 'application/json',
+              },
               body: JSON.stringify({
                 to: customerEmail,
                 subject: 'Your Nourished Rebel purchase is confirmed!',
-                html: `<h1>You're in, ${customerName}!</h1><p>Your purchase is confirmed. We can't wait to support you on your wellness journey.</p><p>With love,<br>The Nourished Rebel Team</p>`,
+                html: `<h1>You're in, ${customerName}!</h1><p>Your purchase has been confirmed. We can't wait to support you on your wellness journey.</p><p>With love,<br>The Nourished Rebel Team</p>`,
               }),
             });
-            const emailResult = await emailResp.json();
-            console.log('[Email] Status:', emailResp.status, JSON.stringify(emailResult));
-          } catch (e) { console.error('[Email] Error:', e); }
-        } else { console.log('[Email] No email address found — skipping'); }
+            const custResult = await custResp.json();
+            console.log('[Email-Customer] Status:', custResp.status, JSON.stringify(custResult));
+          } catch (e) { console.error('[Email-Customer] Error:', e); }
+          try {
+            const ownerResp = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: 'nourishedrebel@gmail.com',
+                subject: `New purchase: ${customerName}`,
+                html: `<h1>New Purchase Alert</h1><p><strong>Customer:</strong> ${customerName} (${customerEmail})<br><strong>Amount:</strong> $${(session.amount_total ?? 0) / 100}<br><strong>Session:</strong> ${session.id}</p>`,
+              }),
+            });
+            const ownerResult = await ownerResp.json();
+            console.log('[Email-Owner] Status:', ownerResp.status, JSON.stringify(ownerResult));
+          } catch (e) { console.error('[Email-Owner] Error:', e); }
+        } else {
+          console.log('[Email] No customer email found — skipping both emails');
+        }
       }
     }
   }
