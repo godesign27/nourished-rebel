@@ -37,17 +37,30 @@ Deno.serve(async (req) => {
     const customerName = session.customer_details?.name ?? 'there';
     console.log('Session:', session.id, '| Email:', customerEmail, '| Payment:', session.payment_status);
     if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
-      const { data: purchase, error: dbError } = await supabase
+      const { data: updatedPurchase, error: updateError } = await supabase
         .from('program_purchases')
         .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
         .eq('stripe_checkout_session_id', session.id)
         .eq('status', 'pending')
         .select()
         .maybeSingle();
-      if (dbError) console.error('DB error:', dbError);
-      else if (!purchase) console.log('No pending purchase found for session:', session.id);
-      else {
-        console.log('Purchase completed:', purchase.id);
+      if (updateError) console.error('DB update error:', updateError);
+      let purchase = updatedPurchase;
+      if (!purchase) {
+        console.log('No pending purchase to update, checking for existing completed purchase...');
+        const { data: existingPurchase, error: selectError } = await supabase
+          .from('program_purchases')
+          .select()
+          .eq('stripe_checkout_session_id', session.id)
+          .eq('status', 'completed')
+          .maybeSingle();
+        if (selectError) console.error('DB select error:', selectError);
+        purchase = existingPurchase;
+      }
+      if (!purchase) {
+        console.log('No purchase found for session:', session.id);
+      } else {
+        console.log('Purchase found (status:', purchase.status, '):', purchase.id);
         console.log('[Email] customerEmail value:', customerEmail);
         if (customerEmail) {
           try {
