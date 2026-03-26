@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../../components/shared/Button';
 import { Drawer } from '../../components/shared/Drawer';
-import { Plus, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { Program, ProgramVariant } from '../../types';
 import ImageUpload from '../../components/blog/ImageUpload';
@@ -186,6 +186,8 @@ function ProgramForm({ program, onClose, onSave }: ProgramFormProps) {
     image_url: program?.image_url || '',
     display_order: program?.display_order || 0,
     is_active: program?.is_active ?? true,
+    booking_link: program?.booking_link || '',
+    intake_form_link: program?.intake_form_link || '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [variants, setVariants] = useState<ProgramVariant[]>([]);
@@ -231,6 +233,8 @@ function ProgramForm({ program, onClose, onSave }: ProgramFormProps) {
         slug,
         price: formData.price ? parseFloat(formData.price.toString()) : null,
         display_order: parseInt(formData.display_order.toString()) || 0,
+        booking_link: formData.booking_link || null,
+        intake_form_link: formData.intake_form_link || null,
       };
 
       if (program) {
@@ -383,6 +387,36 @@ function ProgramForm({ program, onClose, onSave }: ProgramFormProps) {
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              Booking Link
+            </label>
+            <input
+              type="url"
+              value={formData.booking_link}
+              onChange={(e) => setFormData({ ...formData, booking_link: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              placeholder="https://calendly.com/..."
+            />
+            <p className="text-xs text-text-secondary mt-1">Included in purchase confirmation emails</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              Intake Form Link
+            </label>
+            <input
+              type="url"
+              value={formData.intake_form_link}
+              onChange={(e) => setFormData({ ...formData, intake_form_link: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              placeholder="https://forms.google.com/..."
+            />
+            <p className="text-xs text-text-secondary mt-1">Included in purchase confirmation emails</p>
           </div>
         </div>
 

@@ -76,6 +76,8 @@ export interface Program {
   is_active: boolean;
   display_order: number;
   featured_on_home: boolean;
+  booking_link: string | null;
+  intake_form_link: string | null;
   created_at: string;
   updated_at: string;
 }
