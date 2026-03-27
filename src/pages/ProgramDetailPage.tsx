@@ -202,10 +202,18 @@ export function ProgramDetailPage() {
 
       <Section spacing="lg" background="white">
         <Container>
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="grid lg:grid-cols-[1fr_400px] gap-12 items-start">
             <div>
+              <span className="inline-block px-3 py-1 bg-brand-100 text-brand-700 text-sm font-medium rounded-full mb-4">
+                {program.category}
+              </span>
+
+              <h1 className="text-3xl lg:text-4xl font-bold text-text-heading mb-6">
+                {program.name}
+              </h1>
+
               {program.image_url && (
-                <div className="rounded-xl overflow-hidden bg-gray-100">
+                <div className="rounded-xl overflow-hidden bg-gray-100 mb-8">
                   <img
                     src={program.image_url}
                     alt={program.name}
@@ -214,8 +222,25 @@ export function ProgramDetailPage() {
                 </div>
               )}
 
+              <BodyText className="mb-6 leading-relaxed text-lg">{program.summary}</BodyText>
+
+              {program.ideal_participant && (
+                <div className="bg-accent-50 border-l-4 border-accent-500 p-4 rounded-r mb-6">
+                  <p className="text-sm font-semibold text-text-heading mb-1">Ideal for:</p>
+                  <p className="text-sm text-text-primary">{program.ideal_participant}</p>
+                </div>
+              )}
+
+              {program.duration && (
+                <div className="flex items-center gap-6 text-sm text-text-secondary mb-8">
+                  <div>
+                    <span className="font-medium text-text-heading">Duration:</span> {program.duration}
+                  </div>
+                </div>
+              )}
+
               {program.description && (
-                <div className="mt-10">
+                <div className="mt-4">
                   <H2 className="mb-6">About This Program</H2>
                   <div
                     className="prose prose-lg max-w-none"
@@ -254,28 +279,9 @@ export function ProgramDetailPage() {
               )}
             </div>
 
-            <div>
-              <span className="inline-block px-3 py-1 bg-brand-100 text-brand-700 text-sm font-medium rounded-full mb-4">
-                {program.category}
-              </span>
-
-              <h1 className="text-3xl lg:text-4xl font-bold text-text-heading mb-2">
-                {program.name}
-              </h1>
-
-              {displayPrice && (
-                <p className="text-2xl font-bold text-text-heading mb-6">
-                  {displayPrice}
-                  {selectedVariant?.billing_frequency && selectedVariant.billing_frequency !== 'one-time' && (
-                    <span className="text-base font-normal text-text-secondary ml-1">
-                      / {selectedVariant.billing_frequency}
-                    </span>
-                  )}
-                </p>
-              )}
-
+            <div className="lg:sticky lg:top-24">
               {variants.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-4">
                   <p className="text-sm font-semibold text-text-heading mb-3">Available Options:</p>
                   <div className="space-y-2">
                     {variants.map((variant) => {
@@ -339,20 +345,16 @@ export function ProgramDetailPage() {
                 </div>
               )}
 
-              <BodyText className="mb-6 leading-relaxed">{program.summary}</BodyText>
-
-              {program.ideal_participant && (
-                <div className="bg-accent-50 border-l-4 border-accent-500 p-4 rounded-r mb-6">
-                  <p className="text-sm font-semibold text-text-heading mb-1">Ideal for:</p>
-                  <p className="text-sm text-text-primary">{program.ideal_participant}</p>
-                </div>
+              {displayPrice && (
+                <p className="text-2xl font-bold text-text-heading mb-4">
+                  {displayPrice}
+                  {selectedVariant?.billing_frequency && selectedVariant.billing_frequency !== 'one-time' && (
+                    <span className="text-base font-normal text-text-secondary ml-1">
+                      / {selectedVariant.billing_frequency}
+                    </span>
+                  )}
+                </p>
               )}
-
-              <div className="flex items-center gap-6 text-sm text-text-secondary mb-8">
-                <div>
-                  <span className="font-medium text-text-heading">Duration:</span> {program.duration}
-                </div>
-              </div>
 
               {checkoutError && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
