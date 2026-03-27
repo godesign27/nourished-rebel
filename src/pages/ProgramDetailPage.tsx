@@ -178,6 +178,8 @@ export function ProgramDetailPage() {
     );
   }
 
+  const variantsWithDetails = variants.filter((v) => v.detailed_description);
+
   const displayPrice = selectedVariant
     ? `$${Number(selectedVariant.price).toFixed(2)}`
     : program.price
@@ -222,17 +224,32 @@ export function ProgramDetailPage() {
                 </div>
               )}
 
-              {selectedVariant?.detailed_description && (
+              {variantsWithDetails.length > 0 && (
                 <div ref={variantDetailRef} className="mt-10 scroll-mt-24">
-                  <div className="border-t border-gray-200 pt-10">
-                    <H2 className="mb-6">{selectedVariant.name}</H2>
+                  {variantsWithDetails.map((variant, idx) => (
                     <div
-                      className="prose prose-lg max-w-none"
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(selectedVariant.detailed_description),
-                      }}
-                    />
-                  </div>
+                      key={variant.id}
+                      id={`variant-${variant.id}`}
+                      className={`${idx > 0 ? 'mt-10' : ''} scroll-mt-24`}
+                    >
+                      <div className={`${idx > 0 ? 'border-t border-gray-200 pt-10' : ''}`}>
+                        <div className="flex items-center gap-3 mb-6">
+                          <H2 className="!mb-0">{variant.name}</H2>
+                          {selectedVariant?.id === variant.id && (
+                            <span className="px-2.5 py-1 bg-brand-100 text-brand-700 text-xs font-semibold rounded-full">
+                              Selected
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className="prose prose-lg max-w-none"
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(variant.detailed_description!),
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -268,9 +285,10 @@ export function ProgramDetailPage() {
                           key={variant.id}
                           onClick={() => {
                             setSelectedVariant(variant);
-                            if (variant.detailed_description && variantDetailRef.current) {
+                            if (variant.detailed_description) {
                               setTimeout(() => {
-                                variantDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                const el = document.getElementById(`variant-${variant.id}`);
+                                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }, 100);
                             }
                           }}

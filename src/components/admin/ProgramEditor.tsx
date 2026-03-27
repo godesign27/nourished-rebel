@@ -42,22 +42,23 @@ function createVariantFormData(variant?: ProgramVariant | null): VariantFormData
   };
 }
 
-export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) {
+export function ProgramEditor({ program: initialProgram, onClose, onSave }: ProgramEditorProps) {
+  const [currentProgram, setCurrentProgram] = useState<Program | null>(initialProgram);
   const [activeTab, setActiveTab] = useState<ActiveTab>('general');
   const [formData, setFormData] = useState({
-    name: program?.name || '',
-    category: program?.category || '',
-    summary: program?.summary || '',
-    description: program?.description || '',
-    ideal_participant: program?.ideal_participant || '',
-    duration: program?.duration || '',
-    price: program?.price || '',
-    cta_label: program?.cta_label || 'Learn More',
-    image_url: program?.image_url || '',
-    display_order: program?.display_order || 0,
-    is_active: program?.is_active ?? true,
-    booking_link: program?.booking_link || '',
-    intake_form_link: program?.intake_form_link || '',
+    name: initialProgram?.name || '',
+    category: initialProgram?.category || '',
+    summary: initialProgram?.summary || '',
+    description: initialProgram?.description || '',
+    ideal_participant: initialProgram?.ideal_participant || '',
+    duration: initialProgram?.duration || '',
+    price: initialProgram?.price || '',
+    cta_label: initialProgram?.cta_label || 'Learn More',
+    image_url: initialProgram?.image_url || '',
+    display_order: initialProgram?.display_order || 0,
+    is_active: initialProgram?.is_active ?? true,
+    booking_link: initialProgram?.booking_link || '',
+    intake_form_link: initialProgram?.intake_form_link || '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [variants, setVariants] = useState<ProgramVariant[]>([]);
@@ -67,19 +68,19 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
   const [newVariantForm, setNewVariantForm] = useState<VariantFormData>(createVariantFormData());
 
   useEffect(() => {
-    if (program?.id) {
+    if (currentProgram?.id) {
       loadVariants();
     }
-  }, [program?.id]);
+  }, [currentProgram?.id]);
 
   const loadVariants = async () => {
-    if (!program?.id) return;
+    if (!currentProgram?.id) return;
     setIsLoadingVariants(true);
     try {
       const { data, error } = await supabase
         .from('program_variants')
         .select('*')
-        .eq('program_id', program.id)
+        .eq('program_id', currentProgram.id)
         .order('display_order', { ascending: true });
 
       if (error) throw error;
@@ -115,19 +116,26 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
         intake_form_link: formData.intake_form_link || null,
       };
 
-      if (program) {
+      if (currentProgram) {
         const { error } = await supabase
           .from('programs')
           .update(programData)
-          .eq('id', program.id);
+          .eq('id', currentProgram.id);
         if (error) throw error;
+        onSave();
+        onClose();
       } else {
-        const { error } = await supabase.from('programs').insert([programData]);
+        const { data, error } = await supabase
+          .from('programs')
+          .insert([programData])
+          .select()
+          .maybeSingle();
         if (error) throw error;
+        onSave();
+        if (data) {
+          setCurrentProgram(data);
+        }
       }
-
-      onSave();
-      onClose();
     } catch (error) {
       console.error('Error saving program:', error);
       alert('Failed to save program. Please try again.');
@@ -138,12 +146,12 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
 
   const handleSaveVariant = async (variantId: string) => {
     const form = variantForms[variantId];
-    if (!form || !program?.id) return;
+    if (!form || !currentProgram?.id) return;
 
     setIsSaving(true);
     try {
       const variantData = {
-        program_id: program.id,
+        program_id: currentProgram.id,
         name: form.name,
         description: form.description || null,
         detailed_description: form.detailed_description || null,
@@ -171,12 +179,12 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
   };
 
   const handleCreateVariant = async () => {
-    if (!program?.id) return;
+    if (!currentProgram?.id) return;
 
     setIsSaving(true);
     try {
       const variantData = {
-        program_id: program.id,
+        program_id: currentProgram.id,
         name: newVariantForm.name,
         description: newVariantForm.description || null,
         detailed_description: newVariantForm.detailed_description || null,
@@ -306,13 +314,13 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
             )}
           </div>
 
-          {program?.id && !isNewVariant && (
+          {currentProgram?.id && !isNewVariant && (
             <div className="flex-shrink-0 px-4 border-l border-gray-200">
               <button
                 onClick={handleAddVariantTab}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm"
               >
-                <Plus size={16} />
+                <Plus size={16} strokeWidth={2.5} />
                 Add Variant
               </button>
             </div>
@@ -373,7 +381,7 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
           </Button>
           {isOnGeneralTab && (
             <Button type="button" onClick={handleSaveProgram} disabled={isSaving}>
-              {isSaving ? 'Saving...' : program ? 'Update Program' : 'Create Program'}
+              {isSaving ? 'Saving...' : currentProgram ? 'Update Program' : 'Create Program'}
             </Button>
           )}
           {activeVariantId && (
@@ -470,11 +478,11 @@ function GeneralTab({ formData, setFormData, coverImage }: GeneralTabProps) {
         <label className="block text-sm font-medium text-text-primary mb-2">
           Full Description
         </label>
-        <div className="[&_.ProseMirror]:min-h-[300px]">
+        <div className="[&_.ProseMirror]:min-h-[120px]">
           <TiptapEditor
             content={formData.description || ''}
             onChange={(content) => setFormData((prev: typeof formData) => ({ ...prev, description: content }))}
-            placeholder="Describe what participants will learn, the process, outcomes..."
+            placeholder="Brief program overview (detailed content goes on each variant tab)"
           />
         </div>
       </div>

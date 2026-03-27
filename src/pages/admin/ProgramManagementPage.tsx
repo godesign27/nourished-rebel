@@ -161,6 +161,7 @@ export function ProgramManagementPage() {
         size="full"
       >
         <ProgramEditor
+          key={editingProgram?.id || 'new'}
           program={editingProgram}
           onClose={closeDrawer}
           onSave={loadPrograms}
