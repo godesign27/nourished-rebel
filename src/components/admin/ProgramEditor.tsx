@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../shared/Button';
-import { Plus, CreditCard as Edit2, Trash2, FileText } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { Program, ProgramVariant } from '../../types';
 import ImageUpload from '../blog/ImageUpload';
 import TiptapEditor from '../blog/TiptapEditor';
-import { VariantEditorDrawer } from './VariantEditorDrawer';
-import { sanitizeHtml } from '../../utils/sanitize';
 
 interface ProgramEditorProps {
   program: Program | null;
@@ -14,7 +12,38 @@ interface ProgramEditorProps {
   onSave: () => void;
 }
 
+type ActiveTab = 'general' | string;
+
+interface VariantFormData {
+  name: string;
+  description: string;
+  detailed_description: string;
+  price: string;
+  billing_frequency: string;
+  session_count: string;
+  duration_weeks: string;
+  is_featured: boolean;
+  display_order: number;
+  is_active: boolean;
+}
+
+function createVariantFormData(variant?: ProgramVariant | null): VariantFormData {
+  return {
+    name: variant?.name || '',
+    description: variant?.description || '',
+    detailed_description: variant?.detailed_description || '',
+    price: variant?.price?.toString() || '',
+    billing_frequency: variant?.billing_frequency || '',
+    session_count: variant?.session_count?.toString() || '',
+    duration_weeks: variant?.duration_weeks?.toString() || '',
+    is_featured: variant?.is_featured ?? false,
+    display_order: variant?.display_order || 0,
+    is_active: variant?.is_active ?? true,
+  };
+}
+
 export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('general');
   const [formData, setFormData] = useState({
     name: program?.name || '',
     category: program?.category || '',
@@ -33,10 +62,9 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
   const [isSaving, setIsSaving] = useState(false);
   const [variants, setVariants] = useState<ProgramVariant[]>([]);
   const [isLoadingVariants, setIsLoadingVariants] = useState(false);
-  const [activeVariantTab, setActiveVariantTab] = useState<string | null>(null);
-  const [variantDrawerOpen, setVariantDrawerOpen] = useState(false);
-  const [editingVariant, setEditingVariant] = useState<ProgramVariant | null>(null);
-  const variantContentRef = useRef<HTMLDivElement>(null);
+  const [variantForms, setVariantForms] = useState<Record<string, VariantFormData>>({});
+  const [isNewVariant, setIsNewVariant] = useState(false);
+  const [newVariantForm, setNewVariantForm] = useState<VariantFormData>(createVariantFormData());
 
   useEffect(() => {
     if (program?.id) {
@@ -55,11 +83,14 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      setVariants(data || []);
+      const loaded = data || [];
+      setVariants(loaded);
 
-      if (data && data.length > 0 && !activeVariantTab) {
-        setActiveVariantTab(data[0].id);
-      }
+      const forms: Record<string, VariantFormData> = {};
+      loaded.forEach((v) => {
+        forms[v.id] = createVariantFormData(v);
+      });
+      setVariantForms(forms);
     } catch (error) {
       console.error('Error loading variants:', error);
     } finally {
@@ -67,9 +98,8 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSaveProgram = async () => {
     setIsSaving(true);
-
     try {
       const slug = formData.name
         .toLowerCase()
@@ -106,527 +136,627 @@ export function ProgramEditor({ program, onClose, onSave }: ProgramEditorProps) 
     }
   };
 
-  const handleDeleteVariant = async (id: string) => {
+  const handleSaveVariant = async (variantId: string) => {
+    const form = variantForms[variantId];
+    if (!form || !program?.id) return;
+
+    setIsSaving(true);
+    try {
+      const variantData = {
+        program_id: program.id,
+        name: form.name,
+        description: form.description || null,
+        detailed_description: form.detailed_description || null,
+        price: parseFloat(form.price.toString()),
+        billing_frequency: form.billing_frequency || null,
+        session_count: form.session_count ? parseInt(form.session_count.toString()) : null,
+        duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks.toString()) : null,
+        is_featured: form.is_featured,
+        display_order: parseInt(form.display_order.toString()) || 0,
+        is_active: form.is_active,
+      };
+
+      const { error } = await supabase
+        .from('program_variants')
+        .update(variantData)
+        .eq('id', variantId);
+      if (error) throw error;
+      await loadVariants();
+    } catch (error) {
+      console.error('Error saving variant:', error);
+      alert('Failed to save variant. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateVariant = async () => {
+    if (!program?.id) return;
+
+    setIsSaving(true);
+    try {
+      const variantData = {
+        program_id: program.id,
+        name: newVariantForm.name,
+        description: newVariantForm.description || null,
+        detailed_description: newVariantForm.detailed_description || null,
+        price: parseFloat(newVariantForm.price.toString()),
+        billing_frequency: newVariantForm.billing_frequency || null,
+        session_count: newVariantForm.session_count
+          ? parseInt(newVariantForm.session_count.toString())
+          : null,
+        duration_weeks: newVariantForm.duration_weeks
+          ? parseInt(newVariantForm.duration_weeks.toString())
+          : null,
+        is_featured: newVariantForm.is_featured,
+        display_order: parseInt(newVariantForm.display_order.toString()) || 0,
+        is_active: newVariantForm.is_active,
+      };
+
+      const { data, error } = await supabase
+        .from('program_variants')
+        .insert([variantData])
+        .select()
+        .maybeSingle();
+      if (error) throw error;
+
+      setIsNewVariant(false);
+      setNewVariantForm(createVariantFormData());
+      await loadVariants();
+      if (data) setActiveTab(data.id);
+    } catch (error) {
+      console.error('Error creating variant:', error);
+      alert('Failed to create variant. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteVariant = async (variantId: string) => {
     if (!confirm('Are you sure you want to delete this variant?')) return;
 
     try {
-      const { error } = await supabase.from('program_variants').delete().eq('id', id);
+      const { error } = await supabase.from('program_variants').delete().eq('id', variantId);
       if (error) throw error;
-      if (activeVariantTab === id) {
-        setActiveVariantTab(variants.find((v) => v.id !== id)?.id || null);
-      }
-      loadVariants();
+      setActiveTab('general');
+      await loadVariants();
     } catch (error) {
       console.error('Error deleting variant:', error);
     }
   };
 
-  const openVariantEditor = (variant?: ProgramVariant) => {
-    setEditingVariant(variant || null);
-    setVariantDrawerOpen(true);
+  const handleAddVariantTab = () => {
+    setNewVariantForm(createVariantFormData());
+    setIsNewVariant(true);
+    setActiveTab('new');
   };
 
-  const handleVariantSaved = () => {
-    loadVariants();
+  const handleCancelNewVariant = () => {
+    setIsNewVariant(false);
+    setActiveTab('general');
   };
 
-  const handleVariantTabClick = (variantId: string) => {
-    setActiveVariantTab(variantId);
-    variantContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const activeVariant = variants.find((v) => v.id === activeVariantTab);
+  const updateVariantForm = useCallback(
+    (variantId: string, updates: Partial<VariantFormData>) => {
+      setVariantForms((prev) => ({
+        ...prev,
+        [variantId]: { ...prev[variantId], ...updates },
+      }));
+    },
+    []
+  );
 
   const coverImage = formData.image_url
     ? { url: formData.image_url, alt_text: formData.name || 'Program image' }
     : null;
 
-  return (
-    <>
-      <div className="flex h-[calc(100vh-65px)]">
-        <VariantPreviewPanel
-          variants={variants}
-          activeVariantTab={activeVariantTab}
-          activeVariant={activeVariant}
-          isLoadingVariants={isLoadingVariants}
-          programId={program?.id}
-          variantContentRef={variantContentRef}
-          onTabClick={handleVariantTabClick}
-          onEditVariant={openVariantEditor}
-        />
-
-        <div className="flex-1 overflow-y-auto border-l border-gray-200">
-          <div className="p-6 space-y-6 pb-24">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Program Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Category *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  placeholder="e.g., 1:1 Coaching, Group Program"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Summary *
-              </label>
-              <textarea
-                required
-                value={formData.summary}
-                onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                placeholder="Brief overview of the program"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Full Description
-              </label>
-              <div className="[&_.ProseMirror]:min-h-[300px]">
-                <TiptapEditor
-                  content={formData.description || ''}
-                  onChange={(content) => setFormData({ ...formData, description: content })}
-                  placeholder="Describe what participants will learn, the process, outcomes..."
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Ideal Participant
-              </label>
-              <textarea
-                value={formData.ideal_participant || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, ideal_participant: e.target.value })
-                }
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                placeholder="Who is this program best suited for?"
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Duration *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  placeholder="e.g., 3-6 months"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Base Price (USD)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  placeholder="Optional"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  value={formData.display_order}
-                  onChange={(e) =>
-                    setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Booking Link
-                </label>
-                <input
-                  type="url"
-                  value={formData.booking_link}
-                  onChange={(e) => setFormData({ ...formData, booking_link: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  placeholder="https://calendly.com/..."
-                />
-                <p className="text-xs text-text-secondary mt-1">
-                  Included in purchase confirmation emails
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Intake Form Link
-                </label>
-                <input
-                  type="url"
-                  value={formData.intake_form_link}
-                  onChange={(e) =>
-                    setFormData({ ...formData, intake_form_link: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                  placeholder="https://forms.google.com/..."
-                />
-                <p className="text-xs text-text-secondary mt-1">
-                  Included in purchase confirmation emails
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                CTA Button Label
-              </label>
-              <input
-                type="text"
-                value={formData.cta_label}
-                onChange={(e) => setFormData({ ...formData, cta_label: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-              />
-            </div>
-
-            <ImageUpload
-              label="Program Image"
-              value={coverImage}
-              onChange={(img) => setFormData({ ...formData, image_url: img?.url || '' })}
-            />
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_active"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
-              />
-              <label htmlFor="is_active" className="ml-2 text-sm text-text-primary">
-                Program is active and visible to users
-              </label>
-            </div>
-
-            {program?.id && (
-              <div className="pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-text-heading">
-                      Purchase Variants
-                    </h3>
-                    <p className="text-sm text-text-secondary">
-                      Different pricing options for this program
-                    </p>
-                  </div>
-                  <Button onClick={() => openVariantEditor()}>
-                    <Plus size={16} className="mr-1" />
-                    Add Variant
-                  </Button>
-                </div>
-
-                {isLoadingVariants ? (
-                  <p className="text-text-secondary text-sm">Loading variants...</p>
-                ) : variants.length === 0 ? (
-                  <p className="text-text-secondary text-sm">
-                    No variants yet. Add one to get started.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {variants.map((variant) => (
-                      <div
-                        key={variant.id}
-                        className={`flex items-center justify-between p-4 rounded-lg border transition-all cursor-pointer ${
-                          activeVariantTab === variant.id
-                            ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200'
-                            : 'border-gray-200 bg-gray-50 hover:border-gray-300'
-                        }`}
-                        onClick={() => handleVariantTabClick(variant.id)}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-text-heading">{variant.name}</h4>
-                            {variant.is_featured && (
-                              <span className="px-2 py-0.5 bg-accent-100 text-accent-700 text-xs font-medium rounded">
-                                Featured
-                              </span>
-                            )}
-                            {!variant.is_active && (
-                              <span className="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-medium rounded">
-                                Inactive
-                              </span>
-                            )}
-                            {variant.detailed_description && (
-                              <FileText size={14} className="text-brand-500" title="Has detailed description" />
-                            )}
-                          </div>
-                          {variant.description && (
-                            <p className="text-sm text-text-secondary mt-1 truncate">
-                              {variant.description}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-4 mt-2 text-sm text-text-secondary">
-                            <span className="font-medium text-brand-600">
-                              ${variant.price}
-                            </span>
-                            {variant.billing_frequency && (
-                              <span>{variant.billing_frequency}</span>
-                            )}
-                            {variant.session_count && (
-                              <span>{variant.session_count} sessions</span>
-                            )}
-                            {variant.duration_weeks && (
-                              <span>{variant.duration_weeks} weeks</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openVariantEditor(variant);
-                            }}
-                            className="p-2 rounded-lg bg-brand-100 text-brand-700 hover:bg-brand-200 transition-colors"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVariant(variant.id);
-                            }}
-                            className="p-2 rounded-lg bg-error-100 text-error-700 hover:bg-error-200 transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-4">
-                  <button
-                    type="button"
-                    onClick={() => openVariantEditor()}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 text-text-secondary hover:border-brand-400 hover:text-brand-600 transition-colors"
-                  >
-                    <Plus size={18} />
-                    Add Variant
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="sticky bottom-0 px-6 py-4 border-t border-gray-200 bg-white shadow-lg flex justify-end gap-4 z-[55]">
-            <Button type="button" onClick={onClose} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Saving...' : program ? 'Update Program' : 'Create Program'}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {program?.id && (
-        <VariantEditorDrawer
-          isOpen={variantDrawerOpen}
-          onClose={() => {
-            setVariantDrawerOpen(false);
-            setEditingVariant(null);
-          }}
-          programId={program.id}
-          variant={editingVariant}
-          onSave={handleVariantSaved}
-        />
-      )}
-    </>
-  );
-}
-
-interface VariantPreviewPanelProps {
-  variants: ProgramVariant[];
-  activeVariantTab: string | null;
-  activeVariant: ProgramVariant | undefined;
-  isLoadingVariants: boolean;
-  programId: string | undefined;
-  variantContentRef: React.RefObject<HTMLDivElement>;
-  onTabClick: (id: string) => void;
-  onEditVariant: (variant: ProgramVariant) => void;
-}
-
-function VariantPreviewPanel({
-  variants,
-  activeVariantTab,
-  activeVariant,
-  isLoadingVariants,
-  programId,
-  variantContentRef,
-  onTabClick,
-  onEditVariant,
-}: VariantPreviewPanelProps) {
-  if (!programId) {
-    return (
-      <div className="w-[440px] flex-shrink-0 bg-gray-50 flex items-center justify-center p-8">
-        <div className="text-center">
-          <FileText size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-text-secondary text-sm">
-            Save this program first, then add variants to see their content previews here.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoadingVariants) {
-    return (
-      <div className="w-[440px] flex-shrink-0 bg-gray-50 flex items-center justify-center">
-        <p className="text-text-secondary text-sm">Loading variants...</p>
-      </div>
-    );
-  }
-
-  if (variants.length === 0) {
-    return (
-      <div className="w-[440px] flex-shrink-0 bg-gray-50 flex items-center justify-center p-8">
-        <div className="text-center">
-          <FileText size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-text-heading font-medium mb-1">No variants yet</p>
-          <p className="text-text-secondary text-sm">
-            Add purchase variants to preview their detailed descriptions here.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const isOnGeneralTab = activeTab === 'general';
+  const isOnNewVariant = activeTab === 'new' && isNewVariant;
+  const activeVariantId = !isOnGeneralTab && !isOnNewVariant ? activeTab : null;
 
   return (
-    <div className="w-[440px] flex-shrink-0 bg-gray-50 flex flex-col">
-      <div className="border-b border-gray-200 bg-white">
-        <div className="px-4 pt-4 pb-0">
-          <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-3">
-            Variant Content Preview
-          </p>
-        </div>
-        <div className="flex overflow-x-auto px-4 gap-1 scrollbar-thin">
-          {variants.map((variant) => (
+    <div className="flex flex-col h-[calc(100vh-65px)]">
+      <div className="border-b border-gray-200 bg-white flex-shrink-0">
+        <div className="flex items-center">
+          <div className="flex-1 flex overflow-x-auto">
             <button
-              key={variant.id}
-              onClick={() => onTabClick(variant.id)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
-                activeVariantTab === variant.id
-                  ? 'border-brand-600 text-brand-700 bg-brand-50'
+              onClick={() => setActiveTab('general')}
+              className={`px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
+                isOnGeneralTab
+                  ? 'border-brand-600 text-brand-700'
                   : 'border-transparent text-text-secondary hover:text-text-primary hover:border-gray-300'
               }`}
             >
-              {variant.name}
+              General
             </button>
-          ))}
+
+            {variants.map((variant) => (
+              <button
+                key={variant.id}
+                onClick={() => setActiveTab(variant.id)}
+                className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 flex items-center gap-2 ${
+                  activeTab === variant.id
+                    ? 'border-brand-600 text-brand-700'
+                    : 'border-transparent text-text-secondary hover:text-text-primary hover:border-gray-300'
+                }`}
+              >
+                {variant.name || 'Untitled'}
+                {variant.is_featured && (
+                  <span className="px-1.5 py-0.5 bg-accent-100 text-accent-700 text-[10px] font-semibold rounded leading-none">
+                    Featured
+                  </span>
+                )}
+                {!variant.is_active && (
+                  <span className="w-2 h-2 rounded-full bg-gray-400" title="Inactive" />
+                )}
+              </button>
+            ))}
+
+            {isNewVariant && (
+              <button
+                onClick={() => setActiveTab('new')}
+                className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
+                  isOnNewVariant
+                    ? 'border-brand-600 text-brand-700'
+                    : 'border-transparent text-text-secondary hover:text-text-primary hover:border-gray-300'
+                }`}
+              >
+                New Variant
+              </button>
+            )}
+          </div>
+
+          {program?.id && !isNewVariant && (
+            <div className="flex-shrink-0 px-4 border-l border-gray-200">
+              <button
+                onClick={handleAddVariantTab}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
+              >
+                <Plus size={16} />
+                Add Variant
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div ref={variantContentRef as React.RefObject<HTMLDivElement>} className="flex-1 overflow-y-auto p-6">
-        {activeVariant ? (
-          <div>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-text-heading">
-                  {activeVariant.name}
-                </h3>
-                <div className="flex items-center gap-3 mt-1 text-sm text-text-secondary">
-                  <span className="font-semibold text-brand-600">
-                    ${activeVariant.price}
-                  </span>
-                  {activeVariant.billing_frequency && (
-                    <span>{activeVariant.billing_frequency}</span>
-                  )}
-                  {activeVariant.session_count && (
-                    <span>{activeVariant.session_count} sessions</span>
-                  )}
-                  {activeVariant.duration_weeks && (
-                    <span>{activeVariant.duration_weeks} weeks</span>
-                  )}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => onEditVariant(activeVariant)}
-                className="p-2 rounded-lg text-brand-600 hover:bg-brand-100 transition-colors"
-                title="Edit this variant"
-              >
-                <Edit2 size={16} />
-              </button>
-            </div>
-
-            {activeVariant.description && (
-              <p className="text-sm text-text-secondary mb-4 pb-4 border-b border-gray-200">
-                {activeVariant.description}
-              </p>
-            )}
-
-            {activeVariant.detailed_description ? (
-              <div
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(activeVariant.detailed_description),
-                }}
-              />
-            ) : (
-              <div className="text-center py-12">
-                <FileText size={36} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-text-secondary text-sm mb-3">
-                  No detailed description yet
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onEditVariant(activeVariant)}
-                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
-                >
-                  Add detailed description
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-text-secondary text-sm text-center mt-8">
-            Select a variant to preview its content
-          </p>
+      <div className="flex-1 overflow-y-auto">
+        {isOnGeneralTab && (
+          <GeneralTab
+            formData={formData}
+            setFormData={setFormData}
+            coverImage={coverImage}
+          />
         )}
+
+        {activeVariantId && variantForms[activeVariantId] && (
+          <VariantTab
+            key={activeVariantId}
+            variantId={activeVariantId}
+            form={variantForms[activeVariantId]}
+            onChange={(updates) => updateVariantForm(activeVariantId, updates)}
+          />
+        )}
+
+        {isOnNewVariant && (
+          <VariantTab
+            key="new"
+            variantId="new"
+            form={newVariantForm}
+            onChange={(updates) =>
+              setNewVariantForm((prev) => ({ ...prev, ...updates }))
+            }
+          />
+        )}
+      </div>
+
+      <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
+        <div>
+          {activeVariantId && (
+            <button
+              type="button"
+              onClick={() => handleDeleteVariant(activeVariantId)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-700 hover:bg-error-50 rounded-lg transition-colors"
+            >
+              <Trash2 size={16} />
+              Delete Variant
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            onClick={isOnNewVariant ? handleCancelNewVariant : onClose}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          {isOnGeneralTab && (
+            <Button type="button" onClick={handleSaveProgram} disabled={isSaving}>
+              {isSaving ? 'Saving...' : program ? 'Update Program' : 'Create Program'}
+            </Button>
+          )}
+          {activeVariantId && (
+            <Button
+              type="button"
+              onClick={() => handleSaveVariant(activeVariantId)}
+              disabled={isSaving || !variantForms[activeVariantId]?.name || !variantForms[activeVariantId]?.price}
+            >
+              {isSaving ? 'Saving...' : 'Save Variant'}
+            </Button>
+          )}
+          {isOnNewVariant && (
+            <Button
+              type="button"
+              onClick={handleCreateVariant}
+              disabled={isSaving || !newVariantForm.name || !newVariantForm.price}
+            >
+              {isSaving ? 'Saving...' : 'Create Variant'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface GeneralTabProps {
+  formData: {
+    name: string;
+    category: string;
+    summary: string;
+    description: string;
+    ideal_participant: string;
+    duration: string;
+    price: string | number;
+    cta_label: string;
+    image_url: string;
+    display_order: number;
+    is_active: boolean;
+    booking_link: string;
+    intake_form_link: string;
+  };
+  setFormData: React.Dispatch<React.SetStateAction<typeof formData & Record<string, unknown>>>;
+  coverImage: { url: string; alt_text: string } | null;
+}
+
+function GeneralTab({ formData, setFormData, coverImage }: GeneralTabProps) {
+  return (
+    <div className="max-w-4xl mx-auto p-8 space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Program Name *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, name: e.target.value }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Category *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.category}
+            onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, category: e.target.value }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="e.g., 1:1 Coaching, Group Program"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          Summary *
+        </label>
+        <textarea
+          required
+          value={formData.summary}
+          onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, summary: e.target.value }))}
+          rows={3}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          placeholder="Brief overview of the program"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          Full Description
+        </label>
+        <div className="[&_.ProseMirror]:min-h-[300px]">
+          <TiptapEditor
+            content={formData.description || ''}
+            onChange={(content) => setFormData((prev: typeof formData) => ({ ...prev, description: content }))}
+            placeholder="Describe what participants will learn, the process, outcomes..."
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          Ideal Participant
+        </label>
+        <textarea
+          value={formData.ideal_participant || ''}
+          onChange={(e) =>
+            setFormData((prev: typeof formData) => ({ ...prev, ideal_participant: e.target.value }))
+          }
+          rows={2}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          placeholder="Who is this program best suited for?"
+        />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Duration *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.duration}
+            onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, duration: e.target.value }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="e.g., 3-6 months"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Base Price (USD)
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            value={formData.price}
+            onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, price: e.target.value }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="Optional"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Display Order
+          </label>
+          <input
+            type="number"
+            value={formData.display_order}
+            onChange={(e) =>
+              setFormData((prev: typeof formData) => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Booking Link
+          </label>
+          <input
+            type="url"
+            value={formData.booking_link}
+            onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, booking_link: e.target.value }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="https://calendly.com/..."
+          />
+          <p className="text-xs text-text-secondary mt-1">
+            Included in purchase confirmation emails
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Intake Form Link
+          </label>
+          <input
+            type="url"
+            value={formData.intake_form_link}
+            onChange={(e) =>
+              setFormData((prev: typeof formData) => ({ ...prev, intake_form_link: e.target.value }))
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="https://forms.google.com/..."
+          />
+          <p className="text-xs text-text-secondary mt-1">
+            Included in purchase confirmation emails
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          CTA Button Label
+        </label>
+        <input
+          type="text"
+          value={formData.cta_label}
+          onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, cta_label: e.target.value }))}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+        />
+      </div>
+
+      <ImageUpload
+        label="Program Image"
+        value={coverImage}
+        onChange={(img) => setFormData((prev: typeof formData) => ({ ...prev, image_url: img?.url || '' }))}
+      />
+
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="is_active"
+          checked={formData.is_active}
+          onChange={(e) => setFormData((prev: typeof formData) => ({ ...prev, is_active: e.target.checked }))}
+          className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
+        />
+        <label htmlFor="is_active" className="ml-2 text-sm text-text-primary">
+          Program is active and visible to users
+        </label>
+      </div>
+    </div>
+  );
+}
+
+interface VariantTabProps {
+  variantId: string;
+  form: VariantFormData;
+  onChange: (updates: Partial<VariantFormData>) => void;
+}
+
+function VariantTab({ form, onChange }: VariantTabProps) {
+  return (
+    <div className="max-w-4xl mx-auto p-8 space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Variant Name *
+          </label>
+          <input
+            type="text"
+            required
+            value={form.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="e.g., 6-Week Package"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Price (USD) *
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            required
+            value={form.price}
+            onChange={(e) => onChange({ price: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          Short Description
+        </label>
+        <textarea
+          value={form.description}
+          onChange={(e) => onChange({ description: e.target.value })}
+          rows={2}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          placeholder="Brief overview shown on variant cards"
+        />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Billing Frequency
+          </label>
+          <select
+            value={form.billing_frequency}
+            onChange={(e) => onChange({ billing_frequency: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          >
+            <option value="">Select...</option>
+            <option value="one-time">One-time</option>
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+            <option value="quarterly">Quarterly</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Session Count
+          </label>
+          <input
+            type="number"
+            value={form.session_count}
+            onChange={(e) => onChange({ session_count: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Duration (weeks)
+          </label>
+          <input
+            type="number"
+            value={form.duration_weeks}
+            onChange={(e) => onChange({ duration_weeks: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-2">
+          Display Order
+        </label>
+        <input
+          type="number"
+          value={form.display_order}
+          onChange={(e) => onChange({ display_order: parseInt(e.target.value) || 0 })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent w-32"
+        />
+      </div>
+
+      <div className="flex items-center gap-6">
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="variant_is_featured"
+            checked={form.is_featured}
+            onChange={(e) => onChange({ is_featured: e.target.checked })}
+            className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
+          />
+          <label htmlFor="variant_is_featured" className="ml-2 text-sm text-text-primary">
+            Featured variant (recommended)
+          </label>
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="variant_is_active"
+            checked={form.is_active}
+            onChange={(e) => onChange({ is_active: e.target.checked })}
+            className="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500"
+          />
+          <label htmlFor="variant_is_active" className="ml-2 text-sm text-text-primary">
+            Active
+          </label>
+        </div>
+      </div>
+
+      <div className="pt-6 border-t border-gray-200">
+        <label className="block text-sm font-medium text-text-primary mb-1">
+          Detailed Description
+        </label>
+        <p className="text-xs text-text-secondary mb-3">
+          Rich content displayed on the program page when a visitor selects this variant
+        </p>
+        <div className="[&_.ProseMirror]:min-h-[300px]">
+          <TiptapEditor
+            content={form.detailed_description || ''}
+            onChange={(content) => onChange({ detailed_description: content })}
+            placeholder="Describe what's included, outcomes, process details..."
+          />
+        </div>
       </div>
     </div>
   );
