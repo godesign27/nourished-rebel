@@ -5,10 +5,11 @@ import { Section } from '../components/shared/Section';
 import { H1, H2, BodyText } from '../components/shared/Heading';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import type { Program } from '../types';
+import type { Program, ProgramVariant } from '../types';
 
 export function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [variantsByProgram, setVariantsByProgram] = useState<Record<string, ProgramVariant[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -18,14 +19,30 @@ export function ProgramsPage() {
 
   const loadPrograms = async () => {
     try {
-      const { data, error } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      const [programsRes, variantsRes] = await Promise.all([
+        supabase
+          .from('programs')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true }),
+        supabase
+          .from('program_variants')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true }),
+      ]);
 
-      if (error) throw error;
-      setPrograms(data || []);
+      if (programsRes.error) throw programsRes.error;
+      setPrograms(programsRes.data || []);
+
+      if (!variantsRes.error && variantsRes.data) {
+        const grouped: Record<string, ProgramVariant[]> = {};
+        for (const v of variantsRes.data) {
+          if (!grouped[v.program_id]) grouped[v.program_id] = [];
+          grouped[v.program_id].push(v);
+        }
+        setVariantsByProgram(grouped);
+      }
     } catch (error) {
       console.error('Error loading programs:', error);
     } finally {
@@ -84,7 +101,7 @@ export function ProgramsPage() {
           ) : (
             <div className="grid gap-6">
               {filteredPrograms.map((program) => (
-                <ProgramListItem key={program.id} program={program} />
+                <ProgramListItem key={program.id} program={program} variants={variantsByProgram[program.id] || []} />
               ))}
             </div>
           )}
@@ -94,11 +111,23 @@ export function ProgramsPage() {
   );
 }
 
-interface ProgramListItemProps {
-  program: Program;
+function formatPriceRange(variants: ProgramVariant[]): string | null {
+  if (variants.length === 0) return null;
+  const prices = variants.map((v) => v.price);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  if (min === 0 && max === 0) return 'Free';
+  if (min === 0) return `Free – $${max}`;
+  if (min === max) return `$${min}`;
+  return `$${min} – $${max}`;
 }
 
-function ProgramListItem({ program }: ProgramListItemProps) {
+interface ProgramListItemProps {
+  program: Program;
+  variants: ProgramVariant[];
+}
+
+function ProgramListItem({ program, variants }: ProgramListItemProps) {
   return (
     <Link
       to={`/programs/${program.slug}`}
@@ -150,12 +179,18 @@ function ProgramListItem({ program }: ProgramListItemProps) {
             <div>
               <span className="font-medium text-text-heading">Duration:</span> {program.duration}
             </div>
-            {program.price && (
-              <div>
-                <span className="font-medium text-text-heading">Starting at:</span> $
-                {program.price}
-              </div>
-            )}
+            {(() => {
+              const range = formatPriceRange(variants);
+              return range ? (
+                <div>
+                  <span className="font-medium text-text-heading">{range}</span>
+                </div>
+              ) : program.price ? (
+                <div>
+                  <span className="font-medium text-text-heading">Starting at:</span> ${program.price}
+                </div>
+              ) : null;
+            })()}
           </div>
         </div>
       </div>
