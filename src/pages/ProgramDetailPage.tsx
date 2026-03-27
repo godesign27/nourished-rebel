@@ -202,16 +202,18 @@ export function ProgramDetailPage() {
 
       <Section spacing="lg" background="white">
         <Container>
+          <div className="mb-8">
+            <span className="inline-block px-3 py-1 bg-brand-100 text-brand-700 text-sm font-medium rounded-full mb-4">
+              {program.category}
+            </span>
+
+            <h1 className="text-3xl lg:text-4xl font-bold text-text-heading">
+              {program.name}
+            </h1>
+          </div>
+
           <div className="grid lg:grid-cols-[1fr_400px] gap-12 items-start">
             <div>
-              <span className="inline-block px-3 py-1 bg-brand-100 text-brand-700 text-sm font-medium rounded-full mb-4">
-                {program.category}
-              </span>
-
-              <h1 className="text-3xl lg:text-4xl font-bold text-text-heading mb-6">
-                {program.name}
-              </h1>
-
               {program.image_url && (
                 <div className="rounded-xl overflow-hidden bg-gray-100 mb-8">
                   <img
