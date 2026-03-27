@@ -200,10 +200,10 @@ export function ProgramDetailPage() {
         </Container>
       </section>
 
-      <Section spacing="lg" background="white">
+      <Section spacing="sm" background="white">
         <Container>
-          <div className="mb-8">
-            <span className="inline-block px-3 py-1 bg-brand-100 text-brand-700 text-sm font-medium rounded-full mb-4">
+          <div className="mb-6">
+            <span className="inline-block px-3 py-1 bg-brand-100 text-brand-700 text-sm font-medium rounded-full mb-3">
               {program.category}
             </span>
 
