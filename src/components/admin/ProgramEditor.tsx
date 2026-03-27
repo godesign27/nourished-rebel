@@ -314,9 +314,18 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
             )}
           </div>
 
-          {currentProgram?.id && !isNewVariant && (
+          {!isNewVariant && (
             <div className="flex-shrink-0 px-5">
-              <Button onClick={handleAddVariantTab} className="!py-2 !px-4 !text-sm flex items-center gap-1.5">
+              <Button
+                onClick={() => {
+                  if (!currentProgram?.id) {
+                    alert('Please save the program first before adding variants.');
+                    return;
+                  }
+                  handleAddVariantTab();
+                }}
+                className="!py-2 !px-4 !text-sm flex items-center gap-1.5"
+              >
                 <Plus size={16} strokeWidth={2.5} />
                 Add Variant
               </Button>
