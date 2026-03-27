@@ -484,13 +484,12 @@ function GeneralTab({ formData, setFormData, coverImage }: GeneralTabProps) {
         <label className="block text-sm font-medium text-text-primary mb-2">
           Full Description
         </label>
-        <div className="[&_.ProseMirror]:min-h-[120px]">
-          <TiptapEditor
-            content={formData.description || ''}
-            onChange={(content) => setFormData((prev: typeof formData) => ({ ...prev, description: content }))}
-            placeholder="Brief program overview (detailed content goes on each variant tab)"
-          />
-        </div>
+        <TiptapEditor
+          content={formData.description || ''}
+          onChange={(content) => setFormData((prev: typeof formData) => ({ ...prev, description: content }))}
+          placeholder="Brief program overview (detailed content goes on each variant tab)"
+          minHeight="120px"
+        />
       </div>
 
       <div>

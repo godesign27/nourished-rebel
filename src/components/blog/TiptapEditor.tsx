@@ -27,9 +27,10 @@ interface TiptapEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  minHeight?: string;
 }
 
-export default function TiptapEditor({ content, onChange, placeholder }: TiptapEditorProps) {
+export default function TiptapEditor({ content, onChange, placeholder, minHeight = '400px' }: TiptapEditorProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [showImageInput, setShowImageInput] = useState(false);
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
@@ -67,7 +68,8 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[400px] p-4',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto focus:outline-none p-4',
+        style: `min-height: ${minHeight}`,
       },
     },
   });
