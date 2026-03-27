@@ -224,23 +224,6 @@ export function ProgramDetailPage() {
                 </div>
               )}
 
-              <BodyText className="mb-6 leading-relaxed text-lg">{program.summary}</BodyText>
-
-              {program.ideal_participant && (
-                <div className="bg-accent-50 border-l-4 border-accent-500 p-4 rounded-r mb-6">
-                  <p className="text-sm font-semibold text-text-heading mb-1">Ideal for:</p>
-                  <p className="text-sm text-text-primary">{program.ideal_participant}</p>
-                </div>
-              )}
-
-              {program.duration && (
-                <div className="flex items-center gap-6 text-sm text-text-secondary mb-8">
-                  <div>
-                    <span className="font-medium text-text-heading">Duration:</span> {program.duration}
-                  </div>
-                </div>
-              )}
-
               {program.description && (
                 <div className="mt-4">
                   <H2 className="mb-6">About This Program</H2>
