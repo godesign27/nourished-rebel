@@ -315,14 +315,11 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
           </div>
 
           {currentProgram?.id && !isNewVariant && (
-            <div className="flex-shrink-0 px-4 border-l border-gray-200">
-              <button
-                onClick={handleAddVariantTab}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm"
-              >
+            <div className="flex-shrink-0 px-5">
+              <Button onClick={handleAddVariantTab} className="!py-2 !px-4 !text-sm flex items-center gap-1.5">
                 <Plus size={16} strokeWidth={2.5} />
                 Add Variant
-              </button>
+              </Button>
             </div>
           )}
         </div>
