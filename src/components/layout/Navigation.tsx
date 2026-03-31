@@ -13,7 +13,6 @@ const navigationLinks: NavigationLink[] = [
   { label: 'The Nourished Life', path: '/resources' },
   { label: 'Shop', path: '/shop' },
   { label: 'About', path: '/about' },
-  { label: 'Book a Session', path: '/book-session' },
 ];
 
 export function Navigation() {
@@ -60,6 +59,17 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
+
+            <Link
+              to="/book-session"
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-fast ${
+                shouldBeTransparent
+                  ? 'bg-white text-brand-primary hover:bg-white/90 shadow-md'
+                  : 'bg-brand-primary text-white hover:bg-brand-primary/90 shadow-sm hover:shadow-md'
+              }`}
+            >
+              Discovery Call
+            </Link>
 
             {!user ? (
               <Link
@@ -112,6 +122,14 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
+
+            <Link
+              to="/book-session"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block w-full text-center px-5 py-3 rounded-full font-semibold text-sm bg-brand-primary text-white hover:bg-brand-primary/90 transition-all duration-fast shadow-sm"
+            >
+              Discovery Call
+            </Link>
 
             {!user ? (
               <Link
