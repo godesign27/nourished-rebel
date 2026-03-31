@@ -61,9 +61,11 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
     intake_form_link: initialProgram?.intake_form_link || '',
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [variants, setVariants] = useState<ProgramVariant[]>([]);
   const [isLoadingVariants, setIsLoadingVariants] = useState(false);
   const [variantForms, setVariantForms] = useState<Record<string, VariantFormData>>({});
+  const [variantsVersion, setVariantsVersion] = useState(0);
   const [isNewVariant, setIsNewVariant] = useState(false);
   const [newVariantForm, setNewVariantForm] = useState<VariantFormData>(createVariantFormData());
 
@@ -92,6 +94,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
         forms[v.id] = createVariantFormData(v);
       });
       setVariantForms(forms);
+      setVariantsVersion((v) => v + 1);
     } catch (error) {
       console.error('Error loading variants:', error);
     } finally {
@@ -100,6 +103,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
   };
 
   const handleSaveProgram = async () => {
+    setSaveMessage(null);
     setIsSaving(true);
     try {
       const slug = formData.name
@@ -148,14 +152,21 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
     const form = variantForms[variantId];
     if (!form || !currentProgram?.id) return;
 
+    setSaveMessage(null);
     setIsSaving(true);
     try {
+      const price = parseFloat(form.price.toString());
+      if (isNaN(price)) {
+        setSaveMessage({ type: 'error', text: 'Please enter a valid price.' });
+        return;
+      }
+
       const variantData = {
         program_id: currentProgram.id,
         name: form.name,
         description: form.description || null,
         detailed_description: form.detailed_description || null,
-        price: parseFloat(form.price.toString()),
+        price,
         billing_frequency: form.billing_frequency || null,
         session_count: form.session_count ? parseInt(form.session_count.toString()) : null,
         duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks.toString()) : null,
@@ -164,15 +175,21 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
         is_active: form.is_active,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('program_variants')
         .update(variantData)
-        .eq('id', variantId);
+        .eq('id', variantId)
+        .select();
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('Update failed — no rows were modified. You may need to log out and log back in.');
+      }
       await loadVariants();
-    } catch (error) {
+      setSaveMessage({ type: 'success', text: 'Variant saved.' });
+    } catch (error: unknown) {
       console.error('Error saving variant:', error);
-      alert('Failed to save variant. Please try again.');
+      const msg = error instanceof Error ? error.message : 'Failed to save variant. Please try again.';
+      setSaveMessage({ type: 'error', text: msg });
     } finally {
       setIsSaving(false);
     }
@@ -181,14 +198,21 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
   const handleCreateVariant = async () => {
     if (!currentProgram?.id) return;
 
+    setSaveMessage(null);
     setIsSaving(true);
     try {
+      const price = parseFloat(newVariantForm.price.toString());
+      if (isNaN(price)) {
+        setSaveMessage({ type: 'error', text: 'Please enter a valid price.' });
+        return;
+      }
+
       const variantData = {
         program_id: currentProgram.id,
         name: newVariantForm.name,
         description: newVariantForm.description || null,
         detailed_description: newVariantForm.detailed_description || null,
-        price: parseFloat(newVariantForm.price.toString()),
+        price,
         billing_frequency: newVariantForm.billing_frequency || null,
         session_count: newVariantForm.session_count
           ? parseInt(newVariantForm.session_count.toString())
@@ -212,9 +236,11 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
       setNewVariantForm(createVariantFormData());
       await loadVariants();
       if (data) setActiveTab(data.id);
-    } catch (error) {
+      setSaveMessage({ type: 'success', text: 'Variant created.' });
+    } catch (error: unknown) {
       console.error('Error creating variant:', error);
-      alert('Failed to create variant. Please try again.');
+      const msg = error instanceof Error ? error.message : 'Failed to create variant. Please try again.';
+      setSaveMessage({ type: 'error', text: msg });
     } finally {
       setIsSaving(false);
     }
@@ -268,7 +294,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
         <div className="flex items-center">
           <div className="flex-1 flex overflow-x-auto">
             <button
-              onClick={() => setActiveTab('general')}
+              onClick={() => { setSaveMessage(null); setActiveTab('general'); }}
               className={`px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
                 isOnGeneralTab
                   ? 'border-brand-600 text-brand-700'
@@ -281,7 +307,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
             {variants.map((variant) => (
               <button
                 key={variant.id}
-                onClick={() => setActiveTab(variant.id)}
+                onClick={() => { setSaveMessage(null); setActiveTab(variant.id); }}
                 className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 flex items-center gap-2 ${
                   activeTab === variant.id
                     ? 'border-brand-600 text-brand-700'
@@ -302,7 +328,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
 
             {isNewVariant && (
               <button
-                onClick={() => setActiveTab('new')}
+                onClick={() => { setSaveMessage(null); setActiveTab('new'); }}
                 className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
                   isOnNewVariant
                     ? 'border-brand-600 text-brand-700'
@@ -345,7 +371,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
 
         {activeVariantId && variantForms[activeVariantId] && (
           <VariantTab
-            key={activeVariantId}
+            key={`${activeVariantId}-${variantsVersion}`}
             variantId={activeVariantId}
             form={variantForms[activeVariantId]}
             onChange={(updates) => updateVariantForm(activeVariantId, updates)}
@@ -365,7 +391,7 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
       </div>
 
       <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-4">
           {activeVariantId && (
             <button
               type="button"
@@ -376,9 +402,15 @@ export function ProgramEditor({ program: initialProgram, onClose, onSave }: Prog
               Delete Variant
             </button>
           )}
+          {saveMessage && (
+            <span className={`text-sm font-medium ${saveMessage.type === 'success' ? 'text-success-700' : 'text-error-700'}`}>
+              {saveMessage.text}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Button
+            variant="secondary"
             type="button"
             onClick={isOnNewVariant ? handleCancelNewVariant : onClose}
             disabled={isSaving}
