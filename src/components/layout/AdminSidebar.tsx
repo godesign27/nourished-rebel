@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminModeToggle } from '../shared/AdminModeToggle';
 import {
@@ -32,6 +32,7 @@ const navItems: NavItem[] = [
 
 export function AdminSidebar() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
@@ -84,7 +85,10 @@ export function AdminSidebar() {
       {/* Logout Button */}
       <div className="p-3 border-t border-gray-200">
         <button
-          onClick={signOut}
+          onClick={async () => {
+            await signOut();
+            navigate('/');
+          }}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-text-secondary hover:bg-error-light hover:text-error-primary transition-all duration-200"
         >
           <LogOut size={20} />
