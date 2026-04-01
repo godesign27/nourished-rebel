@@ -7,23 +7,18 @@ export function ProblemAwarenessSection() {
     <Section spacing="lg" background="white">
       <Container size="narrow" className="text-center">
         <H2 className="mb-6">
-          You're not alone in feeling confused
+          There's a Better Way—And It Doesn't Involve More Rules
         </H2>
 
         <div className="space-y-6">
           <BodyText>
-            Conflicting advice from every direction. Diets that work for a week, then fail.
-            Symptoms that no one seems to take seriously. Frustration with your body when you're
-            doing everything "right."
+            You don't need another plan to follow. You don't need more restriction.
+            You need an approach that actually makes sense for your body.
           </BodyText>
 
           <BodyText>
-            You've tried eliminating foods, following meal plans, and reading every article you can find.
-            But nothing feels sustainable. Nothing addresses the root of what's happening in your body.
-          </BodyText>
-
-          <BodyText className="text-heading-4 font-medium text-text-primary">
-            There's a gentler, more intuitive way forward.
+            One that cuts through the noise, gets to the root, and finally gives you
+            a way forward that feels sustainable—not exhausting.
           </BodyText>
         </div>
       </Container>
