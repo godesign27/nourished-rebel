@@ -26,7 +26,7 @@ export function EmailCaptureSection() {
         </H2>
 
         <BodyText className="mb-10 max-w-[600px] mx-auto">
-          Join our community and receive weekly insights, recipes, and practical tips to support your wellness journey.
+          Stop following the crowd—get grounded, no-nonsense nutrition guidance delivered to your inbox.
         </BodyText>
 
         {submitted ? (
