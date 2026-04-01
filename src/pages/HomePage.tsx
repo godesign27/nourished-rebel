@@ -6,8 +6,6 @@ import FeaturedBlogSection from '../components/home/FeaturedBlogSection';
 import { ResourcesPreviewSection } from '../components/home/ResourcesPreviewSection';
 import { FounderStorySection } from '../components/home/FounderStorySection';
 import FeaturedContentSection from '../components/home/FeaturedContentSection';
-import { EmailCaptureSection } from '../components/home/EmailCaptureSection';
-
 export function HomePage() {
   return (
     <>
@@ -19,7 +17,6 @@ export function HomePage() {
       <ResourcesPreviewSection />
       <FounderStorySection />
       <FeaturedContentSection />
-      <EmailCaptureSection />
     </>
   );
 }
