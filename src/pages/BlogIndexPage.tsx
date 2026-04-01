@@ -6,9 +6,16 @@ import { H1 } from '../components/shared/Heading';
 import BlogPostCard from '../components/blog/BlogPostCard';
 import TagFilter from '../components/blog/TagFilter';
 import { getBlogPosts, getAllTags, getBlogPostsByTag } from '../lib/api';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import type { BlogPost } from '../types';
 
 export default function BlogIndexPage() {
+  useDocumentMeta({
+    title: 'Blog',
+    description: 'Insights, recipes, and wellness wisdom for nourishing your body and mind. Read the latest from Nourished Rebel.',
+    canonicalPath: '/blog',
+  });
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);

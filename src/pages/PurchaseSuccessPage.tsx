@@ -5,10 +5,17 @@ import { Section } from '../components/shared/Section';
 import { Button } from '../components/shared/Button';
 import { CheckCircle, ArrowRight, Mail, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 type PurchaseStatus = 'loading' | 'completed' | 'pending' | 'failed' | 'not_found';
 
 export function PurchaseSuccessPage() {
+  useDocumentMeta({
+    title: 'Purchase Confirmation',
+    description: 'Your purchase has been confirmed. Thank you for choosing Nourished Rebel.',
+    canonicalPath: '/purchase/success',
+    noindex: true,
+  });
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [status, setStatus] = useState<PurchaseStatus>('loading');

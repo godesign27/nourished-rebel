@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container } from '../components/shared/Container';
 import { Section } from '../components/shared/Section';
 import { supabase } from '../lib/supabase';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import DOMPurify from 'dompurify';
 
 interface AboutPageContent {
@@ -11,6 +12,11 @@ interface AboutPageContent {
 }
 
 export function AboutPage() {
+  useDocumentMeta({
+    title: 'About',
+    description: 'Learn about Nourished Rebel and our mission to empower people to reclaim their health through real food, holistic nutrition, and self-trust.',
+    canonicalPath: '/about',
+  });
   const [content, setContent] = useState<AboutPageContent | null>(null);
   const [loading, setLoading] = useState(true);
 

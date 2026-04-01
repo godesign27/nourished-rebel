@@ -1,8 +1,15 @@
 import { Container } from '../components/shared/Container';
 import { Section } from '../components/shared/Section';
 import { H1, BodyText } from '../components/shared/Heading';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 export function ShopPage() {
+  useDocumentMeta({
+    title: 'Shop',
+    description: 'Discover curated wellness products and resources from Nourished Rebel to support your holistic health journey.',
+    canonicalPath: '/shop',
+  });
+
   return (
     <div className="pt-20">
       <Section spacing="lg" background="primary">

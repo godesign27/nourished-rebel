@@ -2,6 +2,7 @@ import { Calendar, Clock, MessageCircle, ArrowRight, Sparkles } from 'lucide-rea
 import { Container } from '../components/shared/Container';
 import { Section } from '../components/shared/Section';
 import { H1, H2, BodyText } from '../components/shared/Heading';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const SCHEDULER_URL = 'https://client-nta.nutri-q.com/public/calendar/e1fee14f920511f0aa3b0affd2188ebf';
 
@@ -24,6 +25,12 @@ const steps = [
 ];
 
 export function BookSessionPage() {
+  useDocumentMeta({
+    title: 'Book a Discovery Call',
+    description: 'Schedule a free discovery call with Nourished Rebel to discuss your health goals and find out if holistic nutrition coaching is right for you.',
+    canonicalPath: '/book-session',
+  });
+
   return (
     <div className="pt-20">
       <Section spacing="lg" background="primary">

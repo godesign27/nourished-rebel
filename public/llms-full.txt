@@ -1,0 +1,123 @@
+# Nourished Rebel - Complete Site Information
+
+> Holistic nutrition coaching that helps you reclaim your health with real food, not rules.
+
+## Brand Overview
+
+Nourished Rebel is a holistic nutrition and wellness coaching practice founded on the belief that real food is the foundation of health. We guide individuals away from diet culture, medical confusion, and restrictive eating toward a sustainable, intuitive relationship with food and their bodies.
+
+Our approach is evidence-informed, personalized, and grounded in self-trust and body wisdom over external rules.
+
+### Mission Statement
+
+Empower people to reclaim their health through real food, holistic nutrition, and self-trust.
+
+### Core Beliefs
+
+- No diets, no extremes, no medicalized language
+- Real food as the foundation of health
+- Gut health as central to overall wellness
+- Personalized approaches over one-size-fits-all solutions
+- Self-trust and body wisdom over external rules
+
+### Brand Personality
+
+- Calm, grounded, and supportive
+- Evidence-informed but intuitive
+- Warm and human, never preachy or sales-heavy
+
+## Services
+
+### Nutrition Coaching Programs
+
+Nourished Rebel offers personalized one-on-one and group coaching programs designed to help individuals heal their relationship with food, honor their bodies, and discover what truly nourishes them. Programs cover areas including:
+
+- Gut health restoration
+- Intuitive eating guidance
+- Holistic nutrition planning
+- Sustainable wellness habits
+
+Programs vary in duration and format, with options for different needs and budgets.
+
+### Discovery Calls
+
+Free introductory calls where prospective clients can share their health goals, ask questions, and determine if Nourished Rebel's approach is the right fit. No pressure, no obligations -- just an honest conversation about wellness goals.
+
+### The Nourished Life Blog
+
+A regularly updated blog featuring:
+- Nutrition articles grounded in evidence-based research
+- Wholesome recipes using real, whole foods
+- Gut health guides and information
+- Mindful eating practices
+- Holistic wellness tips and strategies
+
+### Resources Library
+
+A curated collection of articles, guides, and educational content organized by topic to support readers at every stage of their wellness journey.
+
+### Shop
+
+Curated wellness products and resources (coming soon).
+
+## Site Structure
+
+### Public Pages
+
+| Page | URL | Description |
+|------|-----|-------------|
+| Home | https://nourishedrebel.com/ | Landing page with hero, approach overview, featured content, and calls to action |
+| Programs | https://nourishedrebel.com/programs | Browse all coaching programs and services |
+| Program Detail | https://nourishedrebel.com/programs/{slug} | Individual program details, pricing, and enrollment |
+| The Nourished Life | https://nourishedrebel.com/resources | Blog and resources library with search and tag filtering |
+| Blog | https://nourishedrebel.com/blog | Blog index with all published articles |
+| Blog Post | https://nourishedrebel.com/blog/{slug} | Individual blog article with related posts |
+| About | https://nourishedrebel.com/about | About the founder and the Nourished Rebel mission |
+| Book a Discovery Call | https://nourishedrebel.com/book-session | Schedule a free discovery call |
+| Shop | https://nourishedrebel.com/shop | Wellness products (coming soon) |
+
+## Content Topics
+
+Nourished Rebel creates content around these primary topics:
+
+1. **Gut Health** - Understanding the microbiome, digestive wellness, gut-healing foods and protocols
+2. **Holistic Nutrition** - Whole-food nutrition, nutrient density, anti-inflammatory eating
+3. **Intuitive Eating** - Breaking free from diet culture, listening to hunger cues, food freedom
+4. **Real Food Recipes** - Simple, nourishing recipes using whole ingredients
+5. **Wellness Lifestyle** - Sleep, stress management, movement, and overall well-being
+6. **Food as Medicine** - How nutrition supports healing and prevention
+
+## Frequently Asked Questions
+
+### What is holistic nutrition?
+
+Holistic nutrition looks at the whole person -- not just what they eat, but how they eat, their lifestyle, stress levels, sleep, and emotional relationship with food. It considers the interconnection between body systems and aims to support overall wellness through real food and sustainable habits.
+
+### Who is Nourished Rebel for?
+
+Nourished Rebel is for anyone who is tired of conflicting nutrition advice, restrictive diets, and one-size-fits-all approaches. Our clients are typically people who have tried many approaches and are looking for a calm, grounded, personalized path to better health.
+
+### Does Nourished Rebel provide medical advice?
+
+No. Nourished Rebel offers educational wellness information only and does not provide medical advice, diagnosis, or treatment. We always recommend consulting with qualified healthcare providers for medical concerns.
+
+### How do discovery calls work?
+
+Discovery calls are free, no-pressure conversations where you can share your health goals, ask questions, and learn whether Nourished Rebel's approach is right for you. Simply visit the booking page to choose a convenient time.
+
+## Contact Information
+
+- Website: https://nourishedrebel.com
+- Book a Session: https://nourishedrebel.com/book-session
+- Location: United States (virtual services available)
+
+## Technical Information
+
+- Built with React, TypeScript, and Tailwind CSS
+- Hosted as a single-page application
+- Content managed through a custom admin dashboard
+- Blog supports rich text, images, tags, and categories
+
+## Legal
+
+Nourished Rebel offers educational wellness information only and does not provide medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before making changes to your health regimen. Full disclaimer available on the website.

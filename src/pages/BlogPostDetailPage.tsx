@@ -7,6 +7,7 @@ import BlogPostCard from '../components/blog/BlogPostCard';
 import { getBlogPostBySlug, getRelatedPosts } from '../lib/api';
 import { sanitizeHtml } from '../utils/sanitize';
 import { formatReadingTime } from '../utils/readingTime';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import type { BlogPost } from '../types';
 
 export default function BlogPostDetailPage() {
@@ -16,6 +17,14 @@ export default function BlogPostDetailPage() {
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [showShareMenu, setShowShareMenu] = useState(false);
+
+  useDocumentMeta({
+    title: post?.title || 'Blog Post',
+    description: post?.excerpt || post?.summary || 'Read this article on Nourished Rebel.',
+    canonicalPath: `/blog/${slug}`,
+    ogType: 'article',
+    ogImage: post?.cover_image?.url || post?.image_url || undefined,
+  });
 
   useEffect(() => {
     if (slug) {

@@ -5,9 +5,15 @@ import { Section } from '../components/shared/Section';
 import { H1, H2, BodyText } from '../components/shared/Heading';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import type { Program, ProgramVariant } from '../types';
 
 export function ProgramsPage() {
+  useDocumentMeta({
+    title: 'Programs & Services',
+    description: 'Personalized nutrition coaching and group wellness programs designed to help you heal your relationship with food, honor your body, and discover what truly nourishes you.',
+    canonicalPath: '/programs',
+  });
   const [programs, setPrograms] = useState<Program[]>([]);
   const [variantsByProgram, setVariantsByProgram] = useState<Record<string, ProgramVariant[]>>({});
   const [isLoading, setIsLoading] = useState(true);

@@ -8,6 +8,7 @@ import { ArrowLeft, Phone, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sanitizeHtml } from '../utils/sanitize';
 import { useAuth } from '../contexts/AuthContext';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import type { Program, ProgramVariant } from '../types';
 
 export function ProgramDetailPage() {
@@ -21,6 +22,13 @@ export function ProgramDetailPage() {
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const variantDetailRef = useRef<HTMLDivElement>(null);
+
+  useDocumentMeta({
+    title: program?.name || 'Program Details',
+    description: program?.summary || 'Learn more about this nutrition coaching program from Nourished Rebel.',
+    canonicalPath: `/programs/${slug}`,
+    ogImage: program?.image_url || undefined,
+  });
 
   useEffect(() => {
     loadProgram();

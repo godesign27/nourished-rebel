@@ -6,9 +6,16 @@ import { H1, BodyText } from '../components/shared/Heading';
 import BlogPostCard from '../components/blog/BlogPostCard';
 import TagFilter from '../components/blog/TagFilter';
 import { getBlogPosts, getAllTags, getBlogPostsByTag } from '../lib/api';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import type { BlogPost } from '../types';
 
 export function ResourcesPage() {
+  useDocumentMeta({
+    title: 'The Nourished Life',
+    description: 'Explore articles, recipes, and guides on holistic nutrition, gut health, mindful eating, and sustainable wellness from Nourished Rebel.',
+    canonicalPath: '/resources',
+  });
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);

@@ -4,8 +4,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { Container } from '../components/shared/Container';
 import { Button } from '../components/shared/Button';
 import { H1 } from '../components/shared/Heading';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 export function LoginPage() {
+  useDocumentMeta({
+    title: 'Log In',
+    description: 'Sign in to your Nourished Rebel account to access your programs and wellness resources.',
+    canonicalPath: '/login',
+    noindex: true,
+  });
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
