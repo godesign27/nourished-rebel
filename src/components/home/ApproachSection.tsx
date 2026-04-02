@@ -30,8 +30,19 @@ export function ApproachSection() {
           <H2 className="mb-6">
             The Nourished Rebel Approach
           </H2>
-          <BodyText className="max-w-[700px] mx-auto">
-            A framework built on compassion, evidence, and real-world sustainability — not perfection or restriction.
+          <BodyText className="max-w-[700px] mx-auto mb-6">
+            This is where you opt out of the noise, the trends, and the one-size-fits-all BS.
+          </BodyText>
+          <BodyText className="max-w-[700px] mx-auto mb-2">
+            This is where you:
+          </BodyText>
+          <ul className="max-w-[700px] mx-auto space-y-2 mb-6">
+            <li className="text-body font-body text-text-secondary">Stop chasing symptoms and start addressing root causes</li>
+            <li className="text-body font-body text-text-secondary">Stop restricting and start actually nourishing</li>
+            <li className="text-body font-body text-text-secondary">Stop guessing and start working with your body</li>
+          </ul>
+          <BodyText className="max-w-[700px] mx-auto font-medium text-text-primary">
+            No extremes. No perfection. No blindly following rules that were never made for you.
           </BodyText>
         </div>
 
